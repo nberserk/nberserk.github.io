@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Spark 설치 및 설정 | Inertia</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="환경 spark 1.3.0 버전 기준임. hadoop 2.3.0 기준  Standalone vs YARNdeploy 방법에는 Standalone 과 YARN 모드가 있다. MESOS는 안해봐서 패스. YARN으로 복수개의 스파크 잡을 스케쥴링 하거나 동시에 실행할 수 있어 프러덕션환경에서는 YARN이 필수라고 볼 수 있겠고 테스트 용도라면 Standalon">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spark 설치 및 설정">
+<meta property="og:url" content="http://nberserk.github.io/2015/06/15/spark/index.html">
+<meta property="og:site_name" content="Inertia">
+<meta property="og:description" content="환경 spark 1.3.0 버전 기준임. hadoop 2.3.0 기준  Standalone vs YARNdeploy 방법에는 Standalone 과 YARN 모드가 있다. MESOS는 안해봐서 패스. YARN으로 복수개의 스파크 잡을 스케쥴링 하거나 동시에 실행할 수 있어 프러덕션환경에서는 YARN이 필수라고 볼 수 있겠고 테스트 용도라면 Standalon">
+<meta property="og:locale" content="ko_KR">
+<meta property="article:published_time" content="2015-06-15T15:00:00.000Z">
+<meta property="article:modified_time" content="2021-05-30T05:30:39.761Z">
+<meta property="article:author" content="@nberserk">
+<meta property="article:tag" content="spark">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="Inertia" type="application/atom+xml">
+  
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css" integrity="sha384-XdYbMnZ/QjLh6iI4ogqCTaIjrFk87ip+ekIjefZch0Y+PvJ8CDYtEs1ipDmPorQ+" crossorigin="anonymous">
+
+  
+<link rel="stylesheet" href="/css/styles.css">
+
+  
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body>
+  <nav class="navbar navbar-inverse">
+  <div class="container">
+    <!-- Brand and toggle get grouped for better mobile display -->
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#main-menu-navbar" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      
+    </div>
+
+    <!-- Collect the nav links, forms, and other content for toggling -->
+    <div class="collapse navbar-collapse" id="main-menu-navbar">
+      <ul class="nav navbar-nav">
+        
+          <li><a class=""
+                 href="/index.html">Home</a></li>
+        
+          <li><a class=""
+                 href="/archives/">Archives</a></li>
+        
+      </ul>
+
+      <!--
+      <ul class="nav navbar-nav navbar-right">
+        
+          <li><a href="/atom.xml" title="RSS Feed"><i class="fa fa-rss"></i></a></li>
+        
+      </ul>
+      -->
+    </div><!-- /.navbar-collapse -->
+  </div><!-- /.container-fluid -->
+</nav>
+
+  <div class="container">
+    <div class="blog-header">
+  <h1 class="blog-title">Inertia</h1>
+  
+</div>
+
+    <div class="row">
+        <div class="col-sm-8 blog-main">
+          <article id="post-spark" class="article article-type-post" itemscope itemprop="blogPost">
+
+  <header class="article-header">
+    
+  
+    <h1 class="article-title" itemprop="name">
+      Spark 설치 및 설정
+    </h1>
+  
+
+
+  </header>
+
+  <div class="article-meta">
+    <div class="article-datetime">
+  <a href="/2015/06/15/spark/" class="article-date"><time datetime="2015-06-15T15:00:00.000Z" itemprop="datePublished">2015-06-16</time></a>
+</div>
+
+    
+    
+
+  </div>
+  <div class="article-inner">
+
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="환경"><a href="#환경" class="headerlink" title="환경"></a>환경</h2><ul>
+<li>spark 1.3.0 버전 기준임.</li>
+<li>hadoop 2.3.0 기준</li>
+</ul>
+<h2 id="Standalone-vs-YARN"><a href="#Standalone-vs-YARN" class="headerlink" title="Standalone vs YARN"></a>Standalone vs YARN</h2><p>deploy 방법에는 Standalone 과 YARN 모드가 있다. MESOS는 안해봐서 패스. YARN으로 복수개의 스파크 잡을 스케쥴링 하거나 동시에 실행할 수 있어 프러덕션환경에서는 YARN이 필수라고 볼 수 있겠고 테스트 용도라면 Standalone이 설정하기 쉽다.<br>예를 들면, Standalone은 실행중일때 다른 스파크 잡이 들어오면 무시되지만, YARN은 그 잡을 스케쥴링 해서 수행하고 있는 잡이 끝나면 실행해 준다. 스파크 클러스터의 사용자가 많아지고 잡이 많아지면 YARN은 필수 되겠다.</p>
+<h2 id="Standalone-mode"><a href="#Standalone-mode" class="headerlink" title="Standalone mode"></a>Standalone mode</h2><ol>
+<li>master가 될 컴퓨터에 spark 1.3.0 버전을 다운받아서 압축을 푼다</li>
+<li>conf/spark-env.sh 에<ol start="3">
+<li><code>SPARK_MASTER_IP</code> 에 master ip 기입</li>
+<li><del><code>SPARK_LOCAL_IP</code> 에 자신의 ip 기입. 이것은 spark-env.sh보다는 환경변수에 해주는 것이 좋다. IP는 노드마다 다를테니까.</del></li>
+</ol>
+</li>
+<li>conf/slaves 에 slave ip 혹은 호스트 명을 기입 - 한줄에 하나씩</li>
+<li>spark 폴더 전체를 다른 slave에 복사. 앞서 설명한 <a href="!--￼2--">bash script</a>를 사용하면 쉽다.</li>
+<li>master에서 .sbin/start-all.sh 실행</li>
+<li>http://<master ip="">:8080/ 에 접속하면 spark web ui를 볼 수 있다.</master></li>
+</ol>
+<h2 id="YARN"><a href="#YARN" class="headerlink" title="YARN"></a>YARN</h2><p>yarn이 편한것은 굳이 spark를 hadoop cluster에 설치하지 않아도 되는 것이다. 그 이유는 yarn에 어플을 submit할때 피룡한 모든 jar를 던져 주기 때문.<br>해서, spark 다른 버전 여러개를 동시에 yarn 상에서 구동해 볼 수 도 있겠다.</p>
+<ol>
+<li><del>master가 될 컴퓨터에 spark 1.3.0 버전을 다운받아서 압축을 푼다.</del></li>
+<li>spark-submit을 사용할 컴에 스파크를 다운 받아 압축을 풀고</li>
+<li><code>HADOOP_CONF_DIR</code> 환경변수 설정</li>
+<li><del>이 작업을 모든 컴에서 반복.</del></li>
+<li>spark-submit 을 불러주면 된다.</li>
+</ol>
+<p><code>spark-shell --master yarn-client</code>을 실행해서 해보면 잘 동작하는지 확인 할 수 있다.<br>job submit은 <code>spark-submit --class --master yarn-cluster xxxx.jar</code> 이런식..</p>
+<h2 id="spark-on-EMR"><a href="#spark-on-EMR" class="headerlink" title="spark on EMR"></a>spark on EMR</h2><p>cluster모드로 이용하면 exception이 발생했을때 디버깅이 여러모로 번거로운데 팁을 정리해 본다.</p>
+<h3 id="EMR-log이용-해서-디버깅"><a href="#EMR-log이용-해서-디버깅" class="headerlink" title="EMR log이용 해서 디버깅"></a>EMR log이용 해서 디버깅</h3><p>EMR 상에서 spark job을 실행시키면 yarn의 arregation-log option이 default로 꺼져 있는데 그래서 log를 보기가 쉽지가 않다. 하지만, EMR의 하둡은 AWS상으로 로그를 남기는 기능이 있어서 더 쉽게 spark job의 로그를 확인할 수 있다. 단, EMR cluster를 실행할때 LogUri를 걸어주기만 하면 끝이다. 그러면 EMR 4.0 에서는 <code>&lt;bucket_path&gt;/&lt;cluster_id&gt;/container/&lt;application_id&gt;</code> 하위에 spark로그들이 쌓이므로 이것을 확인하면 디버깅이 가능하다.</p>
+<p><code>j-3NJPE2Q3IR2T/containers/application_1450245879642_0002/container_1450245879642_0002_01_000001</code><br>위의 예는 <j-3njpe2q3ir2t> 의 클러스터에 2번째 스파크 잡의 로그는 위의 경로에 저장된다. driver가 000001의 아이디를 가지고 되나본데(?) 그래서 첫번째의 로그만 보면 보통 해결이 된다.<br>단점은, 로그가 s3로 싱크가 되려면 10분정도의 시간이 걸리기 때문에 불편하다. 그래서 아래에서 lynx 를 이용하는 부분을 추가했다.</j-3njpe2q3ir2t></p>
+<h3 id="EMR에서-lynx를-이용해서-디버깅"><a href="#EMR에서-lynx를-이용해서-디버깅" class="headerlink" title="EMR에서 lynx를 이용해서 디버깅"></a>EMR에서 lynx를 이용해서 디버깅</h3><p>특정 스파크 잡이 실패하면 보통 아래 처럼 로그가 뜬다. 그러면 아래의 tracking url을 이용해서 shell 기반 브라우져인 lynx를 이용해서 들어가면 로그를 바로 확인할 수 있다. 1.5.0의 경우는 shell에서 <code>lynx http://ip-xxx.us-west-2.compute.internal:20888/proxy/application_1450245879642_0004</code> 들어간후 executors 링크를 타고 들어가 driver의 stderr로그를 보면 대부분 해결된다.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">07:12:27 INFO yarn.Client:</span><br><span class="line">	 client token: N/A</span><br><span class="line">	 diagnostics: N/A</span><br><span class="line">	 ApplicationMaster RPC port: 0</span><br><span class="line">	 queue: default</span><br><span class="line">	 start time: 1450249874517</span><br><span class="line">	 final status: FAILED</span><br><span class="line">	 tracking URL: http://ip-000-00-00-00.us-west-2.compute.internal:20888/proxy/application_1450245879642_0004/history/application_1450245879642_0004/2</span><br><span class="line">	 user: hadoop</span><br><span class="line">Exception in thread &quot;main&quot; org.apache.spark.SparkException: Application application_1450245879642_0004 finished with failed status</span><br><span class="line">	at org.apache.spark.deploy.yarn.Client.run(Client.scala:920)</span><br><span class="line">	at org.apache.spark.deploy.yarn.Client$.main(Client.scala:966)</span><br><span class="line">	at org.apache.spark.deploy.yarn.Client.main(Client.scala)</span><br><span class="line">	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)</span><br></pre></td></tr></table></figure>
+<h2 id="enabling-spark-event-log"><a href="#enabling-spark-event-log" class="headerlink" title="enabling spark event log"></a>enabling spark event log</h2><p>conf/spark-defaults.conf 를 아래처럼.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">spark.eventLog.enabled true</span><br><span class="line">spark.eventLog.dir hdfs://xxxx/sparklogs</span><br></pre></td></tr></table></figure>
+<p>이렇게 하고 spark job을 실행하면 위에서 설정한 hdfs에 spark event log가 쌓이게 된다. 이 이벤트 로그는 spark의 history server를 통해서 볼 수 있다. <code>sbin/start-history-server.sh</code> 를 통해서 실행하면 되는데 그전에 로그 파일들이 어디에 있는지 지정을 해줘야 한다. 그것은 아래와 같은 환경 변수로 할 수 있다.</p>
+<p><code>export SPARK_HISTORY_OPTS=&quot; -Dspark.history.fs.logDirectory=hdfs://xxx/sparklog&quot;</code></p>
+<p>그후 histgory server를 실행하면, 실행한 컴의 http://<ip>:18080 으로 들어가면 web ui에서 각 잡의 logging을 볼 수 있다.</ip></p>
+<h2 id="history"><a href="#history" class="headerlink" title="history"></a>history</h2><ul>
+<li>15/8/18 fix wrong info about yarn cluster</li>
+<li>15/12/15 adding debugging tip on EMR spark</li>
+</ul>
+
+      
+    </div>
+
+    
+      
+
+    
+
+    <footer class="article-footer">
+      <a data-url="http://nberserk.github.io/2015/06/15/spark/" data-id="ckqe4m41g0006rcqyowdu5hiq" class="article-share-link">
+        <i class="fa fa-share"></i> Share
+      </a>
+      
+        <a href="http://nberserk.github.io/2015/06/15/spark/#disqus_thread" class="article-comment-link">
+          <i class="fa fa-comment"></i> Comments
+        </a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/spark/" rel="tag">spark</a></li></ul>
+
+
+    </footer>
+  </div>
+  
+    
+<ul id="article-nav" class="nav nav-pills nav-justified">
+  
+  <li role="presentation">
+    <a href="/2015/06/10/hadoop-intro/" id="article-nav-older" class="article-nav-link-wrap">
+      <i class="fa fa-chevron-left pull-left"></i>
+      <span class="article-nav-link-title">hadoop 설치 및 설정</span>
+    </a>
+  </li>
+  
+  
+  <li role="presentation">
+    <a href="/2015/06/16/zeppelin/" id="article-nav-newer" class="article-nav-link-wrap">
+      <span class="article-nav-link-title">Zeppelin</span>
+      <i class="fa fa-chevron-right pull-right"></i>
+    </a>
+  </li>
+  
+</ul>
+
+
+  
+</article>
+
+
+<section id="comments">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a target="_blank" rel="noopener" href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+
+
+        </div>
+        <div class="col-sm-3 col-sm-offset-1 blog-sidebar">
+          
+  <div class="sidebar-module sidebar-module-inset">
+  <h4>About</h4>
+  <p>Etiam porta <em>sem malesuada magna</em> mollis euismod. Cras mattis consectetur purus sit amet fermentum. Aenean lacinia bibendum nulla sed consectetur.</p>
+
+</div>
+
+
+  
+  <div class="sidebar-module">
+    <h4>Categories</h4>
+    <ul class="sidebar-module-list"><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/categories/algorithm/">algorithm</a><span class="sidebar-module-list-count">5</span></li></ul>
+  </div>
+
+
+
+  
+  <div class="sidebar-module">
+    <h4>Tags</h4>
+    <ul class="sidebar-module-list" itemprop="keywords"><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/CVA/" rel="tag">CVA</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/algorithm/" rel="tag">algorithm</a><span class="sidebar-module-list-count">15</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/angular/" rel="tag">angular</a><span class="sidebar-module-list-count">6</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/aws/" rel="tag">aws</a><span class="sidebar-module-list-count">5</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/c/" rel="tag">c++</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/checkstyle/" rel="tag">checkstyle</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/cloud-architecture/" rel="tag">cloud architecture</a><span class="sidebar-module-list-count">2</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/coverage/" rel="tag">coverage</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/design/" rel="tag">design</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/django/" rel="tag">django</a><span class="sidebar-module-list-count">2</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/docker/" rel="tag">docker</a><span class="sidebar-module-list-count">5</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/dp/" rel="tag">dp</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/dynamo/" rel="tag">dynamo</a><span class="sidebar-module-list-count">2</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/elasticsearch/" rel="tag">elasticsearch</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/emacs/" rel="tag">emacs</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/emr/" rel="tag">emr</a><span class="sidebar-module-list-count">2</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/fzf/" rel="tag">fzf</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/general/" rel="tag">general</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/gerrit/" rel="tag">gerrit</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/git/" rel="tag">git</a><span class="sidebar-module-list-count">3</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/github/" rel="tag">github</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/google/" rel="tag">google</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/graph/" rel="tag">graph</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/hadoop/" rel="tag">hadoop</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/hexo/" rel="tag">hexo</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/invoke/" rel="tag">invoke</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/jacoco/" rel="tag">jacoco</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/java/" rel="tag">java</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/jekyll/" rel="tag">jekyll</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/jenkins/" rel="tag">jenkins</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/kibana/" rel="tag">kibana</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/mailchimp/" rel="tag">mailchimp</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/maven/" rel="tag">maven</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/mgmt/" rel="tag">mgmt</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/mockito/" rel="tag">mockito</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/mybatis/" rel="tag">mybatis</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/mysql/" rel="tag">mysql</a><span class="sidebar-module-list-count">2</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/nosql/" rel="tag">nosql</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/oauth/" rel="tag">oauth</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/proxy/" rel="tag">proxy</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/rake/" rel="tag">rake</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/regex/" rel="tag">regex</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/rest/" rel="tag">rest</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/ripgrep/" rel="tag">ripgrep</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/ruby/" rel="tag">ruby</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/spark/" rel="tag">spark</a><span class="sidebar-module-list-count">7</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/spring-in-action/" rel="tag">spring in action</a><span class="sidebar-module-list-count">4</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/spring-in-actions/" rel="tag">spring in actions</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/sql/" rel="tag">sql</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/ssh/" rel="tag">ssh</a><span class="sidebar-module-list-count">2</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/swagger/" rel="tag">swagger</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/system-design/" rel="tag">system design</a><span class="sidebar-module-list-count">2</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/template/" rel="tag">template</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/tmux/" rel="tag">tmux</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/tree/" rel="tag">tree</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/vscode/" rel="tag">vscode</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/wordgrep/" rel="tag">wordgrep</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/zeppelin/" rel="tag">zeppelin</a><span class="sidebar-module-list-count">1</span></li></ul>
+  </div>
+
+
+
+  
+  <div class="sidebar-module">
+    <h4>Tag Cloud</h4>
+    <p class="tagcloud">
+      <a href="/tags/CVA/" style="font-size: 10px;">CVA</a> <a href="/tags/algorithm/" style="font-size: 20px;">algorithm</a> <a href="/tags/angular/" style="font-size: 17.14px;">angular</a> <a href="/tags/aws/" style="font-size: 15.71px;">aws</a> <a href="/tags/c/" style="font-size: 10px;">c++</a> <a href="/tags/checkstyle/" style="font-size: 10px;">checkstyle</a> <a href="/tags/cloud-architecture/" style="font-size: 11.43px;">cloud architecture</a> <a href="/tags/coverage/" style="font-size: 10px;">coverage</a> <a href="/tags/design/" style="font-size: 10px;">design</a> <a href="/tags/django/" style="font-size: 11.43px;">django</a> <a href="/tags/docker/" style="font-size: 15.71px;">docker</a> <a href="/tags/dp/" style="font-size: 10px;">dp</a> <a href="/tags/dynamo/" style="font-size: 11.43px;">dynamo</a> <a href="/tags/elasticsearch/" style="font-size: 10px;">elasticsearch</a> <a href="/tags/emacs/" style="font-size: 10px;">emacs</a> <a href="/tags/emr/" style="font-size: 11.43px;">emr</a> <a href="/tags/fzf/" style="font-size: 10px;">fzf</a> <a href="/tags/general/" style="font-size: 10px;">general</a> <a href="/tags/gerrit/" style="font-size: 10px;">gerrit</a> <a href="/tags/git/" style="font-size: 12.86px;">git</a> <a href="/tags/github/" style="font-size: 10px;">github</a> <a href="/tags/google/" style="font-size: 10px;">google</a> <a href="/tags/graph/" style="font-size: 10px;">graph</a> <a href="/tags/hadoop/" style="font-size: 10px;">hadoop</a> <a href="/tags/hexo/" style="font-size: 10px;">hexo</a> <a href="/tags/invoke/" style="font-size: 10px;">invoke</a> <a href="/tags/jacoco/" style="font-size: 10px;">jacoco</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/jekyll/" style="font-size: 10px;">jekyll</a> <a href="/tags/jenkins/" style="font-size: 10px;">jenkins</a> <a href="/tags/kibana/" style="font-size: 10px;">kibana</a> <a href="/tags/mailchimp/" style="font-size: 10px;">mailchimp</a> <a href="/tags/maven/" style="font-size: 10px;">maven</a> <a href="/tags/mgmt/" style="font-size: 10px;">mgmt</a> <a href="/tags/mockito/" style="font-size: 10px;">mockito</a> <a href="/tags/mybatis/" style="font-size: 10px;">mybatis</a> <a href="/tags/mysql/" style="font-size: 11.43px;">mysql</a> <a href="/tags/nosql/" style="font-size: 10px;">nosql</a> <a href="/tags/oauth/" style="font-size: 10px;">oauth</a> <a href="/tags/proxy/" style="font-size: 10px;">proxy</a> <a href="/tags/rake/" style="font-size: 10px;">rake</a> <a href="/tags/regex/" style="font-size: 10px;">regex</a> <a href="/tags/rest/" style="font-size: 10px;">rest</a> <a href="/tags/ripgrep/" style="font-size: 10px;">ripgrep</a> <a href="/tags/ruby/" style="font-size: 10px;">ruby</a> <a href="/tags/spark/" style="font-size: 18.57px;">spark</a> <a href="/tags/spring-in-action/" style="font-size: 14.29px;">spring in action</a> <a href="/tags/spring-in-actions/" style="font-size: 10px;">spring in actions</a> <a href="/tags/sql/" style="font-size: 10px;">sql</a> <a href="/tags/ssh/" style="font-size: 11.43px;">ssh</a> <a href="/tags/swagger/" style="font-size: 10px;">swagger</a> <a href="/tags/system-design/" style="font-size: 11.43px;">system design</a> <a href="/tags/template/" style="font-size: 10px;">template</a> <a href="/tags/tmux/" style="font-size: 10px;">tmux</a> <a href="/tags/tree/" style="font-size: 10px;">tree</a> <a href="/tags/vscode/" style="font-size: 10px;">vscode</a> <a href="/tags/wordgrep/" style="font-size: 10px;">wordgrep</a> <a href="/tags/zeppelin/" style="font-size: 10px;">zeppelin</a>
+    </p>
+  </div>
+
+
+  
+  <div class="sidebar-module">
+    <h4>Archives</h4>
+    <ul class="sidebar-module-list"><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2021/06/">6월 2021</a><span class="sidebar-module-list-count">3</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2020/09/">9월 2020</a><span class="sidebar-module-list-count">2</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2020/04/">4월 2020</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2019/11/">11월 2019</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2019/08/">8월 2019</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2019/05/">5월 2019</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2019/04/">4월 2019</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2019/02/">2월 2019</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2019/01/">1월 2019</a><span class="sidebar-module-list-count">4</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2018/12/">12월 2018</a><span class="sidebar-module-list-count">2</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2018/11/">11월 2018</a><span class="sidebar-module-list-count">2</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2018/10/">10월 2018</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2018/08/">8월 2018</a><span class="sidebar-module-list-count">4</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2018/07/">7월 2018</a><span class="sidebar-module-list-count">5</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2018/06/">6월 2018</a><span class="sidebar-module-list-count">5</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2018/05/">5월 2018</a><span class="sidebar-module-list-count">4</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2018/04/">4월 2018</a><span class="sidebar-module-list-count">4</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2018/03/">3월 2018</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2018/02/">2월 2018</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2018/01/">1월 2018</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2017/12/">12월 2017</a><span class="sidebar-module-list-count">2</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2017/11/">11월 2017</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2017/10/">10월 2017</a><span class="sidebar-module-list-count">2</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2017/09/">9월 2017</a><span class="sidebar-module-list-count">2</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2017/07/">7월 2017</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2017/03/">3월 2017</a><span class="sidebar-module-list-count">2</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2017/02/">2월 2017</a><span class="sidebar-module-list-count">2</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2016/12/">12월 2016</a><span class="sidebar-module-list-count">3</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2016/11/">11월 2016</a><span class="sidebar-module-list-count">12</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2016/07/">7월 2016</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2016/06/">6월 2016</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2016/04/">4월 2016</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2016/03/">3월 2016</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2016/02/">2월 2016</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2016/01/">1월 2016</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2015/12/">12월 2015</a><span class="sidebar-module-list-count">2</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2015/11/">11월 2015</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2015/10/">10월 2015</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2015/08/">8월 2015</a><span class="sidebar-module-list-count">2</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2015/07/">7월 2015</a><span class="sidebar-module-list-count">4</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2015/06/">6월 2015</a><span class="sidebar-module-list-count">5</span></li></ul>
+  </div>
+
+
+
+  
+  <div class="sidebar-module">
+    <h4>Recents</h4>
+    <ul class="sidebar-module-list">
+      
+        <li>
+          <a href="/2021/06/13/top-K-problem/">Top K problem</a>
+        </li>
+      
+        <li>
+          <a href="/2021/06/12/consistent-hashing/">Design distributed Cache</a>
+        </li>
+      
+        <li>
+          <a href="/2021/06/03/distributed-message-queue/">distribute message queue</a>
+        </li>
+      
+        <li>
+          <a href="/2020/09/06/design-patterns/">design patterns</a>
+        </li>
+      
+        <li>
+          <a href="/2020/08/31/wordgrep-pp/">WordGrep Privacy Policy</a>
+        </li>
+      
+    </ul>
+  </div>
+
+
+
+        </div>
+    </div>
+  </div>
+  <footer class="blog-footer">
+  <div class="container">
+    <div id="footer-info" class="inner">
+      &copy; 2021 @nberserk<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+  
+<script>
+  var disqus_shortname = 'nberserk';
+  
+  var disqus_url = 'http://nberserk.github.io/2015/06/15/spark/';
+  
+  (function(){
+    var dsq = document.createElement('script');
+    dsq.type = 'text/javascript';
+    dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js" integrity="sha384-8gBf6Y4YYq7Jx97PIqmTwLPin4hxIzQw5aDmUg/DDhul9fFpbbLcLh3nTIIDJKhx" crossorigin="anonymous"></script>
+
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+</body>
+</html>

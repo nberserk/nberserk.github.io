@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Inertia</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="site.desc">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Inertia">
+<meta property="og:url" content="http://nberserk.github.io/page/6/index.html">
+<meta property="og:site_name" content="Inertia">
+<meta property="og:description" content="site.desc">
+<meta property="og:locale" content="ko_KR">
+<meta property="article:author" content="@nberserk">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="Inertia" type="application/atom+xml">
+  
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css" integrity="sha384-XdYbMnZ/QjLh6iI4ogqCTaIjrFk87ip+ekIjefZch0Y+PvJ8CDYtEs1ipDmPorQ+" crossorigin="anonymous">
+
+  
+<link rel="stylesheet" href="/css/styles.css">
+
+  
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body>
+  <nav class="navbar navbar-inverse">
+  <div class="container">
+    <!-- Brand and toggle get grouped for better mobile display -->
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#main-menu-navbar" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      
+    </div>
+
+    <!-- Collect the nav links, forms, and other content for toggling -->
+    <div class="collapse navbar-collapse" id="main-menu-navbar">
+      <ul class="nav navbar-nav">
+        
+          <li><a class=""
+                 href="/index.html">Home</a></li>
+        
+          <li><a class=""
+                 href="/archives/">Archives</a></li>
+        
+      </ul>
+
+      <!--
+      <ul class="nav navbar-nav navbar-right">
+        
+          <li><a href="/atom.xml" title="RSS Feed"><i class="fa fa-rss"></i></a></li>
+        
+      </ul>
+      -->
+    </div><!-- /.navbar-collapse -->
+  </div><!-- /.container-fluid -->
+</nav>
+
+  <div class="container">
+    <div class="blog-header">
+  <h1 class="blog-title">Inertia</h1>
+  
+</div>
+
+    <div class="row">
+        <div class="col-sm-8 blog-main">
+          
+  
+    <article id="post-elasticsearch-kibana" class="article article-type-post" itemscope itemprop="blogPost">
+
+  <header class="article-header">
+    
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/09/25/elasticsearch-kibana/">elastic search and kibana</a>
+    </h1>
+  
+
+
+  </header>
+
+  <div class="article-meta">
+    <div class="article-datetime">
+  <a href="/2017/09/25/elasticsearch-kibana/" class="article-date"><time datetime="2017-09-25T15:00:00.000Z" itemprop="datePublished">2017-09-26</time></a>
+</div>
+
+    
+    
+
+  </div>
+  <div class="article-inner">
+
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p><a href="https://www.elastic.co/webinars/introduction-elk-stack" target="_blank" rel="noopener">ELK 스택</a>으로 많이 알려져있고, Elastic search(이하 ES) + LogStash + Kibana 의 조합으로 많이 사용한다. ES는 document DB이고, logStash는 로그를 정제하여 ES에 전달하는 역할, Kibana는 로그들을 필터링 및 조합하여 visualization을 하는 역할을 한다. 특히 타임 series 데이터를 보여주는데 적합하고 멋들어지게 보여줄 수 있어 선호되고 있다.</p>
+<h1 id="설치"><a href="#설치" class="headerlink" title="설치"></a>설치</h1><p>AWS에서는 <a href="https://aws.amazon.com/elasticsearch-service/" target="_blank" rel="noopener">Elasticsearch Service</a>로 따로 존재하고 비교적 최신 버전의 ES와 Kibana를 설치되어 있어 사용하기 편리하다.</p>
+<p>아니라면, <a href="https://www.elastic.co/products" target="_blank" rel="noopener">official site</a>에서 ES와 Kibana를 따로 다운 받아서 쉽게 돌려볼수 있다. JAVA만 설치되어 있다면 별다른 어려움은 없다.</p>
+<h1 id="index"><a href="#index" class="headerlink" title="index"></a>index</h1><p>index는 RDB의 table개념이고 table의 shcema는 mapping이라고 불린다. 각각의 row는 document라고 한다.</p>
+<p>index 생성 및 추가는 모두 rest api 방식으로 할 수 있고, PUT으로 index 생성, POST로 data를 추가할 수 있다.</p>
+<p>아래처럼 PUT으로 <code>&lt;server&gt;/twitter</code> 로 생성해주면, <code>&lt;server&gt;/twitter</code> POST로 데이터를 추가할 수 있다.</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">PUT twitter</span><br><span class="line">&#123;</span><br><span class="line">  <span class="attr">"mappings"</span>: &#123;</span><br><span class="line">    <span class="attr">"tweet"</span>: &#123;</span><br><span class="line">      <span class="attr">"properties"</span>: &#123;</span><br><span class="line">        <span class="attr">"message"</span>: &#123; <span class="attr">"type"</span>: <span class="string">"text"</span> &#125;,</span><br><span class="line">        <span class="attr">"user"</span>: &#123; <span class="attr">"type"</span>:<span class="string">"text"</span> &#125;,</span><br><span class="line">        <span class="attr">"created"</span>: &#123;</span><br><span class="line">            <span class="attr">"type"</span>: <span class="string">"date"</span>,</span><br><span class="line">            <span class="attr">"format"</span>: <span class="string">"yyyy-MM-dd HH:mm:ss||epoch_millis"</span></span><br><span class="line">            &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="Kibana"><a href="#Kibana" class="headerlink" title="Kibana"></a>Kibana</h1><p>위에서 들어온 데이터를 Kibana로 visualize해주면 되는데 kibana의 직관적인 UI가 훌륭하다. 리프레쉬 간격도 설정 가능하고 시간간격도 자동으로 조절해준다. 그래프 수준은 훌륭하고 손쉽게 다양한 옵션으로 그래프를 그릴수 있다.</p>
+<p><img src="/images/kibana-time.png" alt="kibana time line"></p>
+<p>전체적인 흐름은 Management 에서 index설정을 하고, Discover에서 실험을 한후, visualize에서 시각화 설정을 해주고, dashboard에서 시각화한 요소들을 조합해서 한번에 볼수 있게 해주면 된다. 아래는 visual builder로 2개의 값을 비교해서 시간 축으로 나타낸 것이다.</p>
+<p><img src="/images/kibana-visualbuilder.png" alt="kibana time line"></p>
+<h2 id="query-string"><a href="#query-string" class="headerlink" title="query string"></a>query string</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">worker:seoul*    : worker filed가 seoul* 를 만족하는 쿼리</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+      
+
+    
+
+    <footer class="article-footer">
+      <a data-url="http://nberserk.github.io/2017/09/25/elasticsearch-kibana/" data-id="ckqe4m42h001frcqyxav2flov" class="article-share-link">
+        <i class="fa fa-share"></i> Share
+      </a>
+      
+        <a href="http://nberserk.github.io/2017/09/25/elasticsearch-kibana/#disqus_thread" class="article-comment-link">
+          <i class="fa fa-comment"></i> Comments
+        </a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/elasticsearch/" rel="tag">elasticsearch</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/kibana/" rel="tag">kibana</a></li></ul>
+
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-aws-redirect-www-withoutwww" class="article article-type-post" itemscope itemprop="blogPost">
+
+  <header class="article-header">
+    
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/09/03/aws-redirect-www-withoutwww/">redirecting www.domain to domain</a>
+    </h1>
+  
+
+
+  </header>
+
+  <div class="article-meta">
+    <div class="article-datetime">
+  <a href="/2017/09/03/aws-redirect-www-withoutwww/" class="article-date"><time datetime="2017-09-03T15:00:00.000Z" itemprop="datePublished">2017-09-04</time></a>
+</div>
+
+    
+    
+
+  </div>
+  <div class="article-inner">
+
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p><a href="http://www.domain.com은" target="_blank" rel="noopener">www.domain.com은</a> domain.com의 서브 도메인이라고 할 수 있다.<br>그러니 route53에서 <a href="http://www.domain.com의" target="_blank" rel="noopener">www.domain.com의</a> A 항목을 만들어서 s3 web으로 보내고, s3 web은 domain.com으로 리다이렉션 시키면 된다.</p>
+<ul>
+<li>이미 domain.com의 route53 설정이 되어 있다고 가정</li>
+<li><a href="http://www.domain.com" target="_blank" rel="noopener">www.domain.com</a> 과 domain.com 2개의 s3 bucket 생성. 이름은 꼭 도메인 네임과 같아야 함.</li>
+<li><p>route53에서 <a href="http://www.domain.com의" target="_blank" rel="noopener">www.domain.com의</a> record set 생성. type은 ‘A’로 하고, <a href="http://www.domain.com의" target="_blank" rel="noopener">www.domain.com의</a> s3 bucket으로 alias를 건다. 아래 스샷 참조.<br><img src="https://user-images.githubusercontent.com/900639/30008944-36364c9a-915f-11e7-93bc-1c4d3a9066fe.png" alt="image"></p>
+</li>
+<li><p>aws&gt;s3&gt; <a href="http://www.domain.com으로" target="_blank" rel="noopener">www.domain.com으로</a> 가서 properties tab의 static web hosting 을 인에이블하고 redirection을 domain.com으로 해준다.</p>
+</li>
+</ul>
+<p><img src="https://user-images.githubusercontent.com/900639/30008999-b6a9f0de-915f-11e7-8ae9-4ffde5898281.png" alt="image"></p>
+<ul>
+<li>시간이 얼마 지난후, <a href="http://www.domain.com을" target="_blank" rel="noopener">www.domain.com을</a> 들어가면 domain.com으로 redirect되는 것을 확인 할 수 있다.</li>
+</ul>
+
+      
+    </div>
+
+    
+      
+
+    
+
+    <footer class="article-footer">
+      <a data-url="http://nberserk.github.io/2017/09/03/aws-redirect-www-withoutwww/" data-id="ckqe4m42g001ercqyzcqt969j" class="article-share-link">
+        <i class="fa fa-share"></i> Share
+      </a>
+      
+        <a href="http://nberserk.github.io/2017/09/03/aws-redirect-www-withoutwww/#disqus_thread" class="article-comment-link">
+          <i class="fa fa-comment"></i> Comments
+        </a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/aws/" rel="tag">aws</a></li></ul>
+
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-angular-semantic" class="article article-type-post" itemscope itemprop="blogPost">
+
+  <header class="article-header">
+    
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/07/08/angular-semantic/">Angular2 에서 semantic js 사용하기</a>
+    </h1>
+  
+
+
+  </header>
+
+  <div class="article-meta">
+    <div class="article-datetime">
+  <a href="/2017/07/08/angular-semantic/" class="article-date"><time datetime="2017-07-08T15:00:00.000Z" itemprop="datePublished">2017-07-09</time></a>
+</div>
+
+    
+    
+
+  </div>
+  <div class="article-inner">
+
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>Angular2와 React는 동시에 뜨더니 요즘은 React가 더 많이 쓰는것 같긴 하다. 하지만 그전에 이미 Angular2를 사용하기로 정했기에 계속 사용하고 있는데 문제는 Angular2와 딱 맞아 떨어지는 CSS Framework이 없어서 불편하다는 것.</p>
+<p>Angular2는 typescript를 사용하고 IDE에서 fully 사용하려면 type definition도 필요히다. 그래서 선택에 제약이 좀 있다.<br>처음에는 <a href="https://material.angular.io/" target="_blank" rel="noopener">Angular Material</a>을 사용했는데, 보다시피 layout쪽 컴포넌트가 많이 약하다. 그래서인지 버전명에 아직도 beta가 붙어있다.<br>Bootstrap/Sematic 등은 모두 훌륭한데, Angular에서 완벽하게 사용하려면 java script를 사용해야 하는데 이것을 사용하려면 설정을 더 해야 한다.<br>새로운 ng-bootstrap이나 ng-semantic도 있긴 하지만 컴포넌트 지원이 완벽하진 않다.</p>
+<p>그래서 내가 semantic의 javascript api를 사용하기 위해서 했던 방법을 공유해보고자 한다. 여기선 semantic에 대해서만 얘기했지만 bootstrap도 다를것은 없다.<br>그리고 장기적으로는 Material처럼 Angular native css framework이 나오는 것이 제일 좋겠다. 그것이 Angular Material이 되겠지만.. 이것만 쓰기에는 컴포넌트가 많이 부족하다.</p>
+<h1 id="setup"><a href="#setup" class="headerlink" title="setup"></a>setup</h1><p>우선 semantic는 내부적으로 jquery를 사용하고 있기 때문에 jquery를 추가 해줘야 된다. 패키징 방식에 따라서 아래처럼 CDN 링크를 사용할 수도 있고,<br>angular-seed라면, <code>{src: &#39;jquery/dist/jquery.min.js&#39;, inject: true},</code> 를 NPM_DEPENDENCIES에 추가해주면 된다.</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&lt;script src=<span class="string">"https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/jquery.min.js"</span>&gt;<span class="xml"><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span></span><br><span class="line">&lt;script src=<span class="string">"https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.2/semantic.min.js"</span>&gt;<span class="xml"><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span></span><br></pre></td></tr></table></figure>
+<h2 id="typescript-에서-js-호출하기"><a href="#typescript-에서-js-호출하기" class="headerlink" title="typescript 에서 js 호출하기"></a>typescript 에서 js 호출하기</h2><p>우선 jQuery 변수를 전역으로 선언한뒤, ngAfterViewInit에서 jQuery의 API를 통해서 semanctic의 dropdown API를 콜하는 예제.<br>이 아이디어는 순수히 <a href="https://github.com/vladotesanovic/ngSemantic" target="_blank" rel="noopener">ngSemantic</a>을 참조한 것이다.<br>dropdown component인 경우 <a href="https://github.com/vladotesanovic/ngSemantic/blob/master/src/dropdown/dropdown.ts" target="_blank" rel="noopener">https://github.com/vladotesanovic/ngSemantic/blob/master/src/dropdown/dropdown.ts</a> 을 참고하면 된다.</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">declare <span class="keyword">var</span> jQuery: any;</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="class"><span class="keyword">class</span> <span class="title">MyComponent</span> <span class="title">implements</span> <span class="title">AfterViewInit</span> </span>&#123;</span><br><span class="line">  ngAfterViewInit(): <span class="keyword">void</span> &#123;</span><br><span class="line">    jQuery(<span class="string">'#dropdown'</span>).dropdown();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+      
+
+    
+
+    <footer class="article-footer">
+      <a data-url="http://nberserk.github.io/2017/07/08/angular-semantic/" data-id="ckqe4m42e001drcqyq7aewppp" class="article-share-link">
+        <i class="fa fa-share"></i> Share
+      </a>
+      
+        <a href="http://nberserk.github.io/2017/07/08/angular-semantic/#disqus_thread" class="article-comment-link">
+          <i class="fa fa-comment"></i> Comments
+        </a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/angular/" rel="tag">angular</a></li></ul>
+
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-aws-basic" class="article article-type-post" itemscope itemprop="blogPost">
+
+  <header class="article-header">
+    
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/03/29/aws-basic/">aws basic</a>
+    </h1>
+  
+
+
+  </header>
+
+  <div class="article-meta">
+    <div class="article-datetime">
+  <a href="/2017/03/29/aws-basic/" class="article-date"><time datetime="2017-03-29T15:00:00.000Z" itemprop="datePublished">2017-03-30</time></a>
+</div>
+
+    
+    
+
+  </div>
+  <div class="article-inner">
+
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>aws 사용하면서 알아두면 좋은것들 정리해 보자.</p>
+<h2 id="CIDR"><a href="#CIDR" class="headerlink" title="CIDR"></a>CIDR</h2><p>vpc를 구성할때 CIDR notation이 나오는데 <a href="https://ko.wikipedia.org/wiki/%EC%82%AC%EC%9D%B4%EB%8D%94%EB%84%A4%ED%8A%B8%EC%9B%8C%ED%82%B9" target="_blank" rel="noopener">여기</a>를 보면 자세하게 설명 되어 있다.</p>
+<p>ip주소는 255가 맥스인 4개의 int로 구성되니까 한 자리에 8bit(255) 즉, 32bit가 된다. <code>a.b.c.d/x</code>의 의미는 a.b.c.d에서 <strong>앞의</strong> x bit까지는 같다는 것을 의미.<br>예를 들어 10.10.1.44는 10.10.1.32와 초기 27비트가 같으므로(아래 참조) 사이더 블록 10.10.1.32/27에 일치한다. 10.10.1.0/24는 10.10.1.까지는 똑같고 마지막 자리만 다른 ip가 할당될 것이라는 뜻이다.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">10.10.1.44: 0x0A.0x0A.0x01.0x2C(0010 1100)</span><br><span class="line">10.10.1.32: 0x0A.0x0A.0x01.0x20(0010 0000)</span><br></pre></td></tr></table></figure>
+<h2 id="VPC"><a href="#VPC" class="headerlink" title="VPC"></a>VPC</h2><p><a href="https://www.youtube.com/watch?v=5_bQ6Dgk6k8" target="_blank" rel="noopener">이 영상</a>이 vpc를 쉽게 설명하고 있다. 개념이 안 와 닿는다면 한번 보시길.</p>
+<p>route table은  패킷이 어디로 가야 할지를 명시해 줌. most specific이 먼저 처리 됨. 아래의 경우 172.31.x.x는 같은 vpc로 흐르고, 나머지는 외부 인터넷으로 라우팅 되게 된다.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">172.31.0.0/16   local</span><br><span class="line">0.0.0.0/0       igw-3376c756</span><br></pre></td></tr></table></figure>
+<p>internet gateways로 패킷을 보내면 internet(외부)로 나가게 된다.</p>
+<h2 id="RDS"><a href="#RDS" class="headerlink" title="RDS"></a>RDS</h2><ul>
+<li>rds launching시에 subnet 관련 에러가 나면, <a href="https://forums.aws.amazon.com/thread.jspa?threadID=153132" target="_blank" rel="noopener">이것</a> 참고. vpc의  subnet이 2개 이상이어야 하고, 그 2개는 availability zone이 달라야 한다.</li>
+</ul>
+<h2 id="security-group"><a href="#security-group" class="headerlink" title="security group"></a>security group</h2><p>logical firewall이랄까.. inbound/outboud로 ip 대역이나, 특정 security group, ip 로 액세스를 허용할 수 있다.</p>
+<p>EC2에서 RDS로 접속이 안될때 보통 security group에 막혀서 인 경우가 많다.</p>
+<h2 id="route53"><a href="#route53" class="headerlink" title="route53"></a>route53</h2><ul>
+<li><p>hosted zone 설정한후,  브라우져에서 <a href="http://www.domain.com" target="_blank" rel="noopener">www.domain.com</a> 은 잘 접속이 되는데, domain.com이 안될 경우는 A record set을 추가해주면 되는데 domain.com을 <code>www.domain.com</code>으로 alias해주면 <a href="http://www.domain.com으로" target="_blank" rel="noopener">www.domain.com으로</a> redirect됨.</p>
+</li>
+<li><p>A record는 ip address로 리졸브가 되지만, cname record은 다른 도메인으로 리졸브 될 수 있다. record type은 <a href="https://en.wikipedia.org/wiki/List_of_DNS_record_types" target="_blank" rel="noopener">위키피디아를 참조</a></p>
+</li>
+</ul>
+
+      
+    </div>
+
+    
+      
+
+    
+
+    <footer class="article-footer">
+      <a data-url="http://nberserk.github.io/2017/03/29/aws-basic/" data-id="ckqe4m42c001arcqya0idkfar" class="article-share-link">
+        <i class="fa fa-share"></i> Share
+      </a>
+      
+        <a href="http://nberserk.github.io/2017/03/29/aws-basic/#disqus_thread" class="article-comment-link">
+          <i class="fa fa-comment"></i> Comments
+        </a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/aws/" rel="tag">aws</a></li></ul>
+
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-ECS" class="article article-type-post" itemscope itemprop="blogPost">
+
+  <header class="article-header">
+    
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/03/26/ECS/">aws ECS 사용하기</a>
+    </h1>
+  
+
+
+  </header>
+
+  <div class="article-meta">
+    <div class="article-datetime">
+  <a href="/2017/03/26/ECS/" class="article-date"><time datetime="2017-03-26T15:00:00.000Z" itemprop="datePublished">2017-03-27</time></a>
+</div>
+
+    
+    
+
+  </div>
+  <div class="article-inner">
+
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>ECS는 EC2 instance를 사용해 container image를 사용할 수 있게 해주는 AWS의 컨테이너 서비스 이다. ECS는 크게 docker registry, Tasks Definition, Clusters 로 구성되어 있다.</p>
+<p>docker registory는 docker hub같은 docker image를 저장할 수 있는 서비스인데 private registry서비스 이니 소스코드가 들어간 이미지도 push할 수 있고 secure하다.</p>
+<p>Tasks definition은 docker run할때 많은 옵션을 줄 수 있는데 이것을 Tasks definition으로 추상화 한것 이다. 예를 들어 포트 매핑(-p), volume mount, 메모리 제한, network setting 등등..</p>
+<p>Clusters는 주어진 클러스터에서 유동적으로 EC2 instance에 명시한 task를 실행할 수 있게 하는 추상화 이다. 어떤 EC2 instance를 사용할지, security group은 무엇을 사용할지, 허용가능한 instance는 몇대나 되는지 등등을 설정할 수 있다.</p>
+<h2 id="create-docker-registry"><a href="#create-docker-registry" class="headerlink" title="create docker registry"></a>create docker registry</h2><p>AWS console &gt; ECS &gt; Repositories &gt; Create repository 에 들어가서 repository 이름을 명시하면 private docker registry를 생성할 수 있다. 이때 읿반적인 docker registry와 다른 점은 이름은 정해져 있다는 것이다. 즉, <code>&lt;registry_ip&gt;/&lt;image_name&gt;:&lt;tag&gt;</code> 에서 <code>image_name</code>이 <code>&lt;registry_url&gt;/&lt;image_name&gt;</code>은 정해진다는 것. tag만 수정할 수 있다.</p>
+<p>이렇게 repository 생성후, 아래 순서로 docker image를 push 하면 된다.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">aws configure <span class="comment"># awscli를 사용하려면 access_key와 secret key등록이 되어 있어야 함.</span></span><br><span class="line">aws ecr get-login --region us-west-2 <span class="comment"># 이 명령을 내리면 docker login command가 출력되니, 이 명령으로 docker login을 수행.</span></span><br><span class="line">docker build -t <span class="built_in">test</span> .  <span class="comment"># docer image 빌드</span></span><br><span class="line">docker tag <span class="built_in">test</span>:latest &lt;id&gt;.dkr.ecr.us-west-2.amazonaws.com/<span class="built_in">test</span>:latest <span class="comment"># 이름 수정후</span></span><br><span class="line">docker push &lt;id&gt;.dkr.ecr.us-west-2.amazonaws.com/<span class="built_in">test</span>:latest <span class="comment"># 푸쉬</span></span><br></pre></td></tr></table></figure>
+<h2 id="nginx-cluster-띄워-보기"><a href="#nginx-cluster-띄워-보기" class="headerlink" title="nginx cluster 띄워 보기"></a>nginx cluster 띄워 보기</h2><h4 id="nginx-task-생성"><a href="#nginx-task-생성" class="headerlink" title="nginx task 생성"></a>nginx task 생성</h4><p>에제로 nginx task 를 생성</p>
+<ol>
+<li>AWS console &gt; ECS &gt; Task Definitions &gt; Create new Task Definition 에서<ol>
+<li><code>task definition name</code> :  nginx</li>
+<li><code>network mode</code>: bridge</li>
+<li><code>Add Container</code> click<ol>
+<li><code>container name</code> : nginx</li>
+<li><code>Image</code>: nginx:latest</li>
+<li><code>port mapping</code>: 80:80</li>
+<li><code>add</code> click</li>
+</ol>
+</li>
+<li><code>Create</code> click</li>
+</ol>
+</li>
+</ol>
+<h4 id="docker-cluster-생성-및-실행"><a href="#docker-cluster-생성-및-실행" class="headerlink" title="docker cluster 생성 및 실행"></a>docker cluster 생성 및 실행</h4><ol>
+<li>AWS console &gt; ECS &gt; Clusters &gt; Create Cluster click<ol>
+<li><code>cluster name</code>: default</li>
+<li><code>create</code> click</li>
+</ol>
+</li>
+<li>다시 AWS console &gt; ECS &gt; Task Definitions 로 돌아거서<ol>
+<li>nginx 선택</li>
+<li>nginx:1 선택 후 Actions&gt; Run Task<ol>
+<li>Cluster에 아까 생성했던 cluster인 default 기입</li>
+<li><code>Run task</code> 클릭</li>
+</ol>
+</li>
+</ol>
+</li>
+<li>이렇게 하면 클러스터에 다커 이미지가 몇분이 흐른후 띄게 된다.</li>
+<li>EC2 메뉴로 가서 해당 ip로 접속을 해보면 nginx 서버가 떠 있다는 웹페이지가 열릴것이다.</li>
+</ol>
+<h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2><ul>
+<li><a href="https://aws.amazon.com/getting-started/tutorials/deploy-docker-containers/" target="_blank" rel="noopener">aws ecs tutorial</a></li>
+</ul>
+
+      
+    </div>
+
+    
+      
+
+    
+
+    <footer class="article-footer">
+      <a data-url="http://nberserk.github.io/2017/03/26/ECS/" data-id="ckqe4m42d001brcqyj5ed9t77" class="article-share-link">
+        <i class="fa fa-share"></i> Share
+      </a>
+      
+        <a href="http://nberserk.github.io/2017/03/26/ECS/#disqus_thread" class="article-comment-link">
+          <i class="fa fa-comment"></i> Comments
+        </a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/aws/" rel="tag">aws</a></li></ul>
+
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-drf" class="article article-type-post" itemscope itemprop="blogPost">
+
+  <header class="article-header">
+    
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/02/19/drf/">Django Rest Framework</a>
+    </h1>
+  
+
+
+  </header>
+
+  <div class="article-meta">
+    <div class="article-datetime">
+  <a href="/2017/02/19/drf/" class="article-date"><time datetime="2017-02-19T15:00:00.000Z" itemprop="datePublished">2017-02-20</time></a>
+</div>
+
+    
+    
+
+  </div>
+  <div class="article-inner">
+
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>요즘 추세인 REST + {Angular, React,} 등을 만들기 위해서는 백엔드가 rest api가 되어야 하는데 그것을 Django Frameowrk위에서 구현한 것이 Django Rest Framework이다. 기존에 <a href="!--￼5--">Django에 관한 post</a>를 올렸는데, REST API backend를 가지게 되면 안드로이드/iOS 어플등도 지원할 수 있게 되고 테스트도 쉽게 만들 수 있어 장점이 있다.</p>
+<p>아래애서 사용할 Snippet 모델을 아래 처럼 정의한다.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Snippet</span><span class="params">(models.Model)</span>:</span></span><br><span class="line">    created = models.DateTimeField(auto_now_add=<span class="keyword">True</span>)</span><br><span class="line">    title = models.CharField(max_length=<span class="number">100</span>, blank=<span class="keyword">True</span>, default=<span class="string">''</span>)</span><br><span class="line">    code = models.TextField()</span><br><span class="line">    linenos = models.BooleanField(default=<span class="keyword">False</span>)</span><br><span class="line">    language = models.CharField(choices=LANGUAGE_CHOICES, default=<span class="string">'python'</span>, max_length=<span class="number">100</span>)</span><br><span class="line">    style = models.CharField(choices=STYLE_CHOICES, default=<span class="string">'friendly'</span>, max_length=<span class="number">100</span>)</span><br><span class="line">    owner = models.ForeignKey(User, on_delete=models.CASCADE)</span><br></pre></td></tr></table></figure>
+<h2 id="Serializer"><a href="#Serializer" class="headerlink" title="Serializer"></a>Serializer</h2><p>우선 이전 포스트에서 Model의 개념은 나왔고, Serializer개념을 이해해야 한다. Model 이 Serializer를 통해서 request/response를 받는다고 생각하면 된다. Serializer는 어떻게 매핑하여 클라이언트에게 돌려줄지, 클라이언트에서 받은 데이터를 어떻게 가공하여 모델에 집어넣을지를 맵핑해주는 레이어라고 생각하면 된다.</p>
+<p>예를 들어, 위의 Snippet 모델에 owner field는, DB에는 primary key인 int로 저장 된다. 이것을 REST API로 보낼때는 int로 돌려줄 수도 있고, 아니면 owner의 정보를 볼 수 있는 url(<code>HyperlinkedRelatedField</code>)로 보내줄 수 도 있다. 이렇든 같은 데이터라도 어떤 형식으로 보내줄지는 요구사항마다 달라질 수 있다. 그래서 이것을 유연하게 대처하도록 Serializer라는 개념으로 추상화 했다.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">read (from client to server): request -&gt; serializer -&gt; model</span><br><span class="line">write(from server to client): model -&gt; serializer -&gt; response</span><br></pre></td></tr></table></figure>
+<h3 id="fields-vs-read-only-fields"><a href="#fields-vs-read-only-fields" class="headerlink" title="fields vs read_only_fields"></a>fields vs read_only_fields</h3><p>fields에 명시된 것은 get/post 시에 나타날 field들을 명시하는 것이다. get에는 필요하지만, post/put시에는 넣을수 없는 정보는 read_\only_fields 로 명시해 주면 된다.</p>
+<p>아래 예저의 경우 get시에는 <code>user</code> 필드도 받지만 post시에는 넣어주지 않아도 된다.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">SnippetSerializer</span><span class="params">(serializers.ModelSerializer)</span>:</span></span><br><span class="line">    <span class="class"><span class="keyword">class</span> <span class="title">Meta</span>:</span></span><br><span class="line">        model = Snippet</span><br><span class="line">        fields = (<span class="string">'id'</span>, <span class="string">'title'</span>, <span class="string">'code'</span>, <span class="string">'linenos'</span>, <span class="string">'language'</span>, <span class="string">'style'</span>, <span class="string">'user'</span>)</span><br><span class="line">        read_only_fields = (<span class="string">'user'</span>, )</span><br></pre></td></tr></table></figure>
+<h2 id="ViewSet"><a href="#ViewSet" class="headerlink" title="ViewSet"></a>ViewSet</h2><p>ViewSet은 Serializer를 통한 오브젝트를 Json으로 렌더링하거나 html로 렌더링을 담당하는 View 이다. 보통은 Model기반으로 하는 ModelViewSet을 많이 사용한다. get/post등의 default implementation이 있기 때문에 대부분은 그대로 사용하면 된다.</p>
+<p><code>perform_create</code>는 post로 실제 모델을 생성하기 전에 불리는 콜백인데, 여기서 POST에서 전달받지 못한 필드들을 초기화 해줄수 있다. 여기서는 owner정보를 채우고 있다.</p>
+<p><code>permission_classes</code>는 access control를 위해서 사용되는데, 로그인한 사용자들에게만 POST를 허용하고 READ는 다 허용하겠다는 정책이 <code>permisson.IsAuthenticatedOrReadOnly</code>이고, owner가 write권한을 아니면 read권한만 주는 것이 <code>IsOwnerOrReadOnly</code> 퍼미션이다. 여기서 read라 함은 get/list 이고, write는 post/put을 얘기한다.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">SnippetViewSet</span><span class="params">(viewsets.ModelViewSet)</span>:</span></span><br><span class="line">    <span class="string">"""</span></span><br><span class="line"><span class="string">    This viewset automatically provides `list`, `create`, `retrieve`,</span></span><br><span class="line"><span class="string">    `update` and `destroy` actions.</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    Additionally we also provide an extra `highlight` action.</span></span><br><span class="line"><span class="string">    """</span></span><br><span class="line">    queryset = Snippet.objects.all()</span><br><span class="line">    serializer_class = SnippetSerializer</span><br><span class="line">    permission_classes = (permissions.IsAuthenticatedOrReadOnly,</span><br><span class="line">                          IsOwnerOrReadOnly,)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">perform_create</span><span class="params">(self, serializer)</span>:</span></span><br><span class="line">        serializer.save(owner=self.request.user)</span><br></pre></td></tr></table></figure>
+<h3 id="Additional-filtering"><a href="#Additional-filtering" class="headerlink" title="Additional filtering"></a>Additional filtering</h3><p>Snippet list 중 내가 만든 Snippet만 보려고 할때는 어떻게 해야 할까. 우선 query param으로 <code>mine=true</code>이런식으로 요청을 한다고 하자. 위의 SnippetViewSet 에서 <code>qet_queryset</code> 함수를 오버라이드하면 된다. 아래처럼.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">get_queryset</span><span class="params">(self)</span>:</span></span><br><span class="line">        queryset = Snippet.objects.all()</span><br><span class="line">        mine = self.request.query_params.get(<span class="string">'mine'</span>, <span class="keyword">None</span>)</span><br><span class="line">        <span class="keyword">if</span> mine <span class="keyword">is</span> <span class="keyword">not</span> <span class="keyword">None</span>:</span><br><span class="line">            queryset = queryset.filter(owner=self.request.user)</span><br><span class="line">        <span class="keyword">return</span> queryset</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+      
+
+    
+
+    <footer class="article-footer">
+      <a data-url="http://nberserk.github.io/2017/02/19/drf/" data-id="ckqe4m42b0018rcqyhodyurw7" class="article-share-link">
+        <i class="fa fa-share"></i> Share
+      </a>
+      
+        <a href="http://nberserk.github.io/2017/02/19/drf/#disqus_thread" class="article-comment-link">
+          <i class="fa fa-comment"></i> Comments
+        </a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/django/" rel="tag">django</a></li></ul>
+
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-angular-form-file" class="article article-type-post" itemscope itemprop="blogPost">
+
+  <header class="article-header">
+    
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/02/11/angular-form-file/">Angular2 file upload</a>
+    </h1>
+  
+
+
+  </header>
+
+  <div class="article-meta">
+    <div class="article-datetime">
+  <a href="/2017/02/11/angular-form-file/" class="article-date"><time datetime="2017-02-11T15:00:00.000Z" itemprop="datePublished">2017-02-12</time></a>
+</div>
+
+    
+    
+
+  </div>
+  <div class="article-inner">
+
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>요즘 한창 Django 와 Angular2를 사용해서 웹사이트를 만들고 있다. 헌데 angular2에서 여러개의 file upload하는 방법이 정확하게 나와 있지 않아서 여기에 정리해 본다.</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">form</span>  [<span class="attr">formGroup</span>]=<span class="string">"myform"</span> (<span class="attr">ngSubmit</span>)=<span class="string">"submit()"</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">label</span>&gt;</span>Name<span class="tag">&lt;/<span class="name">label</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">input</span> <span class="attr">name</span>=<span class="string">"name"</span> <span class="attr">type</span>=<span class="string">"text"</span> <span class="attr">formControlName</span>=<span class="string">"name"</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">label</span>&gt;</span>Image<span class="tag">&lt;/<span class="name">label</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">input</span> <span class="attr">name</span>=<span class="string">"image"</span> <span class="attr">type</span>=<span class="string">"file"</span> <span class="attr">change</span>=<span class="string">"onChangeImage($event)"</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>우선 form의 형식은 위처럼 name과 image 두개.</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="class"><span class="keyword">class</span> <span class="title">ProjectformComponent</span> </span>&#123;</span><br><span class="line">  public myform: FormGroup;</span><br><span class="line">  private image: File;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">  onChangeImage(event) &#123;</span><br><span class="line">    <span class="keyword">const</span> files = event.target.files || event.srcElement.files;</span><br><span class="line">    <span class="keyword">this</span>.image = files[<span class="number">0</span>];</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  submit(): <span class="keyword">void</span> &#123;</span><br><span class="line">    <span class="comment">// validate fields locally</span></span><br><span class="line">    <span class="keyword">if</span>(!<span class="keyword">this</span>.image) &#123;</span><br><span class="line">      <span class="built_in">console</span>.log(<span class="string">'image is required.'</span>);</span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">let</span> data = <span class="keyword">new</span> FormData();</span><br><span class="line">    <span class="keyword">for</span>( <span class="keyword">var</span> p <span class="keyword">in</span> <span class="keyword">this</span>.myform.value) &#123;</span><br><span class="line">      data.append(p, <span class="keyword">this</span>.myform.value[p]);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span>(<span class="keyword">this</span>.image) &#123;</span><br><span class="line">      data.append(<span class="string">'image'</span>, <span class="keyword">this</span>.image);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">let</span> header = <span class="keyword">new</span> Headers(&#123;<span class="string">'enctype'</span>: <span class="string">'multipart/form-data'</span>&#125;);</span><br><span class="line">    <span class="keyword">this</span>.http.post(<span class="string">'/api/url'</span>, data, header).subscribe(</span><br><span class="line">        resp =&gt; <span class="built_in">console</span>.log(<span class="string">'response: '</span>, resp),</span><br><span class="line">        error =&gt; <span class="built_in">console</span>.log(error)</span><br><span class="line">      );</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>위처럼 FormData를 만들어서 이미지와 일반 필드들의 값을 append한후 post의 data로 날리면 multipart로 서버로 전송된다. 나의 경우는 django rest framework을 사용해서 서버를 구성했다.</p>
+
+      
+    </div>
+
+    
+      
+
+    
+
+    <footer class="article-footer">
+      <a data-url="http://nberserk.github.io/2017/02/11/angular-form-file/" data-id="ckqe4m42a0016rcqym195flp3" class="article-share-link">
+        <i class="fa fa-share"></i> Share
+      </a>
+      
+        <a href="http://nberserk.github.io/2017/02/11/angular-form-file/#disqus_thread" class="article-comment-link">
+          <i class="fa fa-comment"></i> Comments
+        </a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/angular/" rel="tag">angular</a></li></ul>
+
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-proxysetting" class="article article-type-post" itemscope itemprop="blogPost">
+
+  <header class="article-header">
+    
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/12/27/proxysetting/">proxy setting</a>
+    </h1>
+  
+
+
+  </header>
+
+  <div class="article-meta">
+    <div class="article-datetime">
+  <a href="/2016/12/27/proxysetting/" class="article-date"><time datetime="2016-12-27T15:00:00.000Z" itemprop="datePublished">2016-12-28</time></a>
+</div>
+
+    
+    
+
+  </div>
+  <div class="article-inner">
+
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>어느 정도의 규모가 있는 회사는 보통 보안 및 관리상의 이유로 proxy서버를 많이 사용한다. 각 툴마다 설정하는 방법등이 상이해서 매번 설정에 애를 먹기에, 여기에 정리해 보고자 한다.</p>
+<h2 id="general"><a href="#general" class="headerlink" title="general"></a>general</h2><p>대부분의 shell command등은 환경변수 http(s)_proxy 을 설정하는 것만으로 대부분 잘 동작한다.</p>
+<p>`~/.bash_profile’ 에 아래 내용을 추가.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">export http_proxy=http://&lt;ip:port&gt;</span><br><span class="line">export https_proxy=http://&lt;ip:port&gt;</span><br></pre></td></tr></table></figure>
+<h2 id="npm"><a href="#npm" class="headerlink" title="npm"></a>npm</h2><p><code>~/.npmrc</code> 에 아래 내용을 추가</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">registry=http://registry.npmjs.org/</span><br><span class="line">strict-ssl=false</span><br><span class="line">proxy=&lt;ip:port&gt;</span><br><span class="line">https-proxy=&lt;ip:port&gt;</span><br></pre></td></tr></table></figure>
+<h2 id="pip"><a href="#pip" class="headerlink" title="pip"></a>pip</h2><p><code>~/.pip/pip.conf</code> 에 아래 내용 추가하거나 <code>pip install --proxy http://&lt;ip:port&gt; ipython</code> 이런식으로 불러주면 된다.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[global]</span><br><span class="line">cert = &lt;cert_path&gt;</span><br><span class="line">proxy = &lt;ip:port&gt;</span><br></pre></td></tr></table></figure>
+<h2 id="bower"><a href="#bower" class="headerlink" title="bower"></a>bower</h2><p><code>~/.bowerrc</code> 에 아래 내용 추가.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  &quot;proxy&quot;:&quot;http://1&lt;ip:port&gt;&quot;,</span><br><span class="line">  &quot;https-proxy&quot;:&quot;http://&lt;ip:port&gt;&quot;,</span><br><span class="line">  &quot;strict-ssl&quot; : false</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="cert"><a href="#cert" class="headerlink" title="cert"></a>cert</h2><p>회사 proxy에 사설 인증서를 사용하는 경우가 있는데(우리회사 –), 이런 경우 인증서가 공인인증기관에서 인증된 것이 아니기 때문에 https handshake에서 에러가 난다. 해킹 기법의 하나인 <a href="https://en.wikipedia.org/wiki/Man-in-the-middle_attack" target="_blank" rel="noopener">main in the middle</a> 을 회사가 하고 있는 것이다. 이런 회사의 경우 모든 패킷은 회사가 들여다 볼 수 있기때문에 privacy 침해의 소지가 다분하다.</p>
+<p>이럴때 https 통신이 실패하지 않게 하려면 어떤 설정이 필요한지 각각의 경우에 대해서 정리해 봤다.</p>
+<h3 id="Mac"><a href="#Mac" class="headerlink" title="Mac"></a>Mac</h3><p>맥은 기본적으로 사설 인증서를 키체인에 등록하고 그 인증서를 <code>System Keychains</code>에 추가한다. 그 인증서를 선택하여 <code>always trust</code>로 해준다. 이렇게 하면 Chrome이나 curl등이 cert error를 내는것을 해결할 수 있다. </p>
+<h3 id="Java"><a href="#Java" class="headerlink" title="Java"></a>Java</h3><p>JDK가 설치된 폴더의 cacerts 파일에 keytool을 이용해서 추가해주면 된다. 아래처럼</p>
+<p><code>/Library/Java/JavaVirtualMachines/jdk1.7.0_75.jdk/Contents/Home/jre/lib/security$ sudo keytool -import -keystore cacerts -file ~/Desktop/samsung.cer</code></p>
+<h3 id="python"><a href="#python" class="headerlink" title="python"></a>python</h3><p>python의 cacert가 위치한 파일을 찾아서 samsung.cer을 추가</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># find cacert.pem in vritualenv direcgtory</span></span><br><span class="line">find . | grep cacert</span><br><span class="line"><span class="comment">#./venv/lib/python2.7/site-packages/requests/cacert.pem</span></span><br><span class="line"><span class="comment"># append samsung.cer to bottom of cacert.pem</span></span><br><span class="line">cat samsung.cer &gt;&gt; ./venv/lib/python2.7/site-packages/certifi/cacert.pem</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+      
+
+    
+
+    <footer class="article-footer">
+      <a data-url="http://nberserk.github.io/2016/12/27/proxysetting/" data-id="ckqe4m4290014rcqy4cbwl0bs" class="article-share-link">
+        <i class="fa fa-share"></i> Share
+      </a>
+      
+        <a href="http://nberserk.github.io/2016/12/27/proxysetting/#disqus_thread" class="article-comment-link">
+          <i class="fa fa-comment"></i> Comments
+        </a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/proxy/" rel="tag">proxy</a></li></ul>
+
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-largesthistogram" class="article article-type-post" itemscope itemprop="blogPost">
+
+  <header class="article-header">
+    
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/12/18/largesthistogram/">largest rectangle in histogram</a>
+    </h1>
+  
+
+
+  </header>
+
+  <div class="article-meta">
+    <div class="article-datetime">
+  <a href="/2016/12/18/largesthistogram/" class="article-date"><time datetime="2016-12-18T15:00:00.000Z" itemprop="datePublished">2016-12-19</time></a>
+</div>
+
+    
+    
+
+  </div>
+  <div class="article-inner">
+
+    <div class="article-entry" itemprop="articleBody">
+      
+        <blockquote>
+<p>Given n non-negative integers representing the histogram’s bar height where the width of each bar is 1, find the area of largest rectangle in the histogram.</p>
+</blockquote>
+<p>Given heights = [2,1,5,6,2,3],<br>return 10.</p>
+<h2 id="idea"><a href="#idea" class="headerlink" title="idea"></a>idea</h2><p>naive는 start, end 를 하나씩 정해서 돌면 <code>O(N^2)</code>.</p>
+<p>모든 height의 왼쪽, 오른쪽 바운더리를 알면 맥스 값을 구할 수 있다. 왼쪽/오른쪽 바운더리는 자신보다 낮은 바를 만나면 결정된다. 따라서 ascending 순으로 리스트를 관리하다가 낮은 바가 나오면 오른쪽 바운더리는 결정이 되고, 왼쪽 바운더리는 리스트의 tail이 된다. 이렇게 각 height에 따라서 계산을 하면 최적해를 구할 수 있다. 이 리스트는 스택으로 구현하는 것이 좋고, push, pop, top 정도만 필요하므로.</p>
+<p>위의 예제를 기반으로 시뮬레이션 해보면 [2,1,5,6,2,3]</p>
+<table>
+<thead>
+<tr>
+<th>i</th>
+<th>stack</th>
+<th>desc</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>0</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>1</td>
+<td>0</td>
+<td>n[i](1)&lt; stack.top(2), stack의 탑인 2의 right는 1, left는 -1(stack이 empty이므로). left right 경계는 포함되지 않으므로 width = 1-(-1)-1 = 1이 됨. localMax=2*1=2</td>
+<td></td>
+</tr>
+<tr>
+<td>1</td>
+<td>1</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>2</td>
+<td>1,2</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>3</td>
+<td>1,2,3</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>4</td>
+<td>1,2</td>
+<td>stack pop. poped=3. n[3]=6. 6의 right=4, left=2. width=4-2-1=1. localMax=6*1=6</td>
+<td></td>
+</tr>
+<tr>
+<td>4</td>
+<td>1</td>
+<td>stack pop, poped=2, n[2]=5, 5의 right=4, left=1. width=4-1-1=2. localMax=5*2=10</td>
+<td></td>
+</tr>
+<tr>
+<td>4</td>
+<td>1,4</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>5</td>
+<td>1,4,5</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>6</td>
+<td>1,4</td>
+<td>stack pop, poped=5, n[5]=3, 3의 right=6, left=4. width=6-4-1=1. localMax=3*1=3</td>
+<td></td>
+</tr>
+<tr>
+<td>6</td>
+<td>1</td>
+<td>stack pop, poped=4, n[4]=2, 2의 right=6, left=1, width=6-1-1=4. localMax=2*4=8</td>
+<td></td>
+</tr>
+<tr>
+<td>6</td>
+<td></td>
+<td>stack pop, poped=1, n[1]=1, 1의 right=6, left=-1, width=6-(-1)-1. localMax=1*6=6</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>따라서 largest area는 10이 된다.</p>
+<h2 id="implementation"><a href="#implementation" class="headerlink" title="implementation"></a>implementation</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">largestRectangleArea</span><span class="params">(<span class="keyword">int</span>[] heights)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> max = Integer.MIN_VALUE;</span><br><span class="line">    Stack&lt;Integer&gt; stack = <span class="keyword">new</span> Stack&lt;&gt;();</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>;i&lt;=N;i++)&#123; <span class="comment">// interate until N,</span></span><br><span class="line">        <span class="keyword">int</span> h = i==N?<span class="number">0</span>:heights[i];</span><br><span class="line">        <span class="keyword">if</span>(stack.isEmpty() || h &gt;= heights[stack.peek()])</span><br><span class="line">            stack.push(i);</span><br><span class="line">        <span class="keyword">else</span>&#123;</span><br><span class="line">            h=heights[stack.pop()];</span><br><span class="line">            <span class="keyword">int</span> width = stack.isEmpty() ? i : i-stack.peek()-<span class="number">1</span>;</span><br><span class="line">            max=Math.max(max, h*width);</span><br><span class="line">            i--;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> max;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="problems"><a href="#problems" class="headerlink" title="problems"></a>problems</h2><ul>
+<li><a href="https://leetcode.com/problems/largest-rectangle-in-histogram/" target="_blank" rel="noopener">largest rectangle in histogram @leetcode</a></li>
+<li><a href="https://leetcode.com/problems/maximal-rectangle/" target="_blank" rel="noopener">Maximal Rectangle @leetcode</a></li>
+</ul>
+<h2 id="reference"><a href="#reference" class="headerlink" title="reference"></a>reference</h2><ul>
+<li><a href="https://github.com/nberserk/codejam/blob/master/java/src/main/java/crackcode/stack/LargestRectangleHistogram.java" target="_blank" rel="noopener">my implementation &amp; test cases</a></li>
+</ul>
+
+      
+    </div>
+
+    
+      
+
+    
+
+    <footer class="article-footer">
+      <a data-url="http://nberserk.github.io/2016/12/18/largesthistogram/" data-id="ckqe4m4280013rcqyosu3rrvt" class="article-share-link">
+        <i class="fa fa-share"></i> Share
+      </a>
+      
+        <a href="http://nberserk.github.io/2016/12/18/largesthistogram/#disqus_thread" class="article-comment-link">
+          <i class="fa fa-comment"></i> Comments
+        </a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/algorithm/" rel="tag">algorithm</a></li></ul>
+
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-maximalSquare" class="article article-type-post" itemscope itemprop="blogPost">
+
+  <header class="article-header">
+    
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/12/03/maximalSquare/">maximal square</a>
+    </h1>
+  
+
+
+  </header>
+
+  <div class="article-meta">
+    <div class="article-datetime">
+  <a href="/2016/12/03/maximalSquare/" class="article-date"><time datetime="2016-12-03T15:00:00.000Z" itemprop="datePublished">2016-12-04</time></a>
+</div>
+
+    
+    
+
+  </div>
+  <div class="article-inner">
+
+    <div class="article-entry" itemprop="articleBody">
+      
+        <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">Given a 2D binary matrix filled with 0&apos;s and 1&apos;s, find the largest square containing only 1&apos;s and return its area.</span><br><span class="line"></span><br><span class="line">For example, given the following matrix:</span><br><span class="line"></span><br><span class="line">1 0 1 0 0</span><br><span class="line">1 0 1 1 1</span><br><span class="line">1 1 1 1 1</span><br><span class="line">1 0 0 1 0</span><br><span class="line">Return 4.</span><br></pre></td></tr></table></figure>
+<h2 id="idea"><a href="#idea" class="headerlink" title="idea"></a>idea</h2><p>생각하기 어려운 dp 식일것 같은데, 아래 처럼 된다. dp(i,j)를 i,j에서 끝나는 maximal square라고 정의.</p>
+<p><code>dp(i,j) = Math.min(dp(i-1,j), dp(i,j-1), dp(i-1,j-1))+1</code></p>
+<p><code>1</code>인 셀이면 dp(i,j)=1이 된다. 이웃들중의 가장 작은 값+1이 되는 것이다. 즉, 모두 인접한 이전 값들이 모두 1이라야 자신은 2가 될 수 있다.</p>
+<p>initial condtion은 (x,0) 은 1이면 1, 아니면 0이 된다. (0,y)도 마찬가지이다.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">maximalSquare</span><span class="params">(<span class="keyword">char</span>[][] matrix)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> row=matrix.length;</span><br><span class="line">        <span class="keyword">if</span>(row==<span class="number">0</span>) <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">int</span> col = matrix[<span class="number">0</span>].length;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">int</span> ret=<span class="number">0</span>;</span><br><span class="line">        <span class="keyword">int</span>[][] dp = <span class="keyword">new</span> <span class="keyword">int</span>[row][col];</span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> y=<span class="number">0</span>;y&lt;row;y++)&#123;</span><br><span class="line">            <span class="keyword">if</span>(matrix[y][<span class="number">0</span>]==<span class="string">'1'</span>)&#123;</span><br><span class="line">                dp[y][<span class="number">0</span>]=<span class="number">1</span>;</span><br><span class="line">                ret=<span class="number">1</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> x=<span class="number">0</span>;x&lt;col;x++)&#123;</span><br><span class="line">            <span class="keyword">if</span> (matrix[<span class="number">0</span>][x]==<span class="string">'1'</span>)&#123;</span><br><span class="line">                dp[<span class="number">0</span>][x]=<span class="number">1</span>;</span><br><span class="line">                ret=<span class="number">1</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> y = <span class="number">1</span>; y &lt; row; y++) &#123;</span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> x = <span class="number">1</span>; x &lt; col; x++) &#123;</span><br><span class="line">                <span class="keyword">if</span>(matrix[y][x]==<span class="string">'0'</span>) <span class="keyword">continue</span>;</span><br><span class="line">                dp[y][x] = Math.min(dp[y-<span class="number">1</span>][x], Math.min(dp[y-<span class="number">1</span>][x-<span class="number">1</span>], dp[y][x-<span class="number">1</span>]) ) +<span class="number">1</span>;</span><br><span class="line">                <span class="keyword">if</span>(dp[y][x]&gt;ret)</span><br><span class="line">                    ret = dp[y][x];</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> ret*ret; <span class="comment">// return area</span></span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<h2 id="problems"><a href="#problems" class="headerlink" title="problems"></a>problems</h2><ul>
+<li><a href="https://leetcode.com/problems/maximal-square/" target="_blank" rel="noopener">Maximal Square @leetcode</a></li>
+<li><a href="https://leetcode.com/problems/maximal-rectangle/" target="_blank" rel="noopener">Maximal Rectangle @leetcode</a> : Square -&gt; Rectangle</li>
+</ul>
+
+      
+    </div>
+
+    
+      
+
+    
+
+    <footer class="article-footer">
+      <a data-url="http://nberserk.github.io/2016/12/03/maximalSquare/" data-id="ckqe4m4270012rcqyi0ewnq2r" class="article-share-link">
+        <i class="fa fa-share"></i> Share
+      </a>
+      
+        <a href="http://nberserk.github.io/2016/12/03/maximalSquare/#disqus_thread" class="article-comment-link">
+          <i class="fa fa-comment"></i> Comments
+        </a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/algorithm/" rel="tag">algorithm</a></li></ul>
+
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+
+
+  <div id="page-nav">
+    <nav><ul class="pagination"><li><a class="page-prev" rel="prev" href="/page/5/"><i class="fa fa-chevron-left"></i> Prev</a></li><li><a class="page-number" href="/">1</a></li><li class="disabled"><span class="page-space">&hellip;</span></li><li><a class="page-number" href="/page/4/">4</a></li><li><a class="page-number" href="/page/5/">5</a></li><li class="active"><span class="page-number">6</span></li><li><a class="page-number" href="/page/7/">7</a></li><li><a class="page-number" href="/page/8/">8</a></li><li class="disabled"><span class="page-space">&hellip;</span></li><li><a class="page-number" href="/page/10/">10</a></li><li><a class="page-next" rel="next" href="/page/7/">Next <i class="fa fa-chevron-right"></i></a></li></ul></nav>
+  </div>
+
+
+
+        </div>
+        <div class="col-sm-3 col-sm-offset-1 blog-sidebar">
+          
+  <div class="sidebar-module sidebar-module-inset">
+  <h4>About</h4>
+  <p>Etiam porta <em>sem malesuada magna</em> mollis euismod. Cras mattis consectetur purus sit amet fermentum. Aenean lacinia bibendum nulla sed consectetur.</p>
+
+</div>
+
+
+  
+  <div class="sidebar-module">
+    <h4>Categories</h4>
+    <ul class="sidebar-module-list"><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/categories/algorithm/">algorithm</a><span class="sidebar-module-list-count">5</span></li></ul>
+  </div>
+
+
+
+  
+  <div class="sidebar-module">
+    <h4>Tags</h4>
+    <ul class="sidebar-module-list" itemprop="keywords"><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/CVA/" rel="tag">CVA</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/algorithm/" rel="tag">algorithm</a><span class="sidebar-module-list-count">15</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/angular/" rel="tag">angular</a><span class="sidebar-module-list-count">6</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/aws/" rel="tag">aws</a><span class="sidebar-module-list-count">5</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/c/" rel="tag">c++</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/checkstyle/" rel="tag">checkstyle</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/cloud-architecture/" rel="tag">cloud architecture</a><span class="sidebar-module-list-count">2</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/coverage/" rel="tag">coverage</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/design/" rel="tag">design</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/django/" rel="tag">django</a><span class="sidebar-module-list-count">2</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/docker/" rel="tag">docker</a><span class="sidebar-module-list-count">5</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/dp/" rel="tag">dp</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/dynamo/" rel="tag">dynamo</a><span class="sidebar-module-list-count">2</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/elasticsearch/" rel="tag">elasticsearch</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/emacs/" rel="tag">emacs</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/emr/" rel="tag">emr</a><span class="sidebar-module-list-count">2</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/fzf/" rel="tag">fzf</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/general/" rel="tag">general</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/gerrit/" rel="tag">gerrit</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/git/" rel="tag">git</a><span class="sidebar-module-list-count">3</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/github/" rel="tag">github</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/google/" rel="tag">google</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/graph/" rel="tag">graph</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/hadoop/" rel="tag">hadoop</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/hexo/" rel="tag">hexo</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/invoke/" rel="tag">invoke</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/jacoco/" rel="tag">jacoco</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/java/" rel="tag">java</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/jekyll/" rel="tag">jekyll</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/jenkins/" rel="tag">jenkins</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/kibana/" rel="tag">kibana</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/mailchimp/" rel="tag">mailchimp</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/maven/" rel="tag">maven</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/mgmt/" rel="tag">mgmt</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/mockito/" rel="tag">mockito</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/mybatis/" rel="tag">mybatis</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/mysql/" rel="tag">mysql</a><span class="sidebar-module-list-count">2</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/nosql/" rel="tag">nosql</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/oauth/" rel="tag">oauth</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/proxy/" rel="tag">proxy</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/rake/" rel="tag">rake</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/regex/" rel="tag">regex</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/rest/" rel="tag">rest</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/ripgrep/" rel="tag">ripgrep</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/ruby/" rel="tag">ruby</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/spark/" rel="tag">spark</a><span class="sidebar-module-list-count">7</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/spring-in-action/" rel="tag">spring in action</a><span class="sidebar-module-list-count">4</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/spring-in-actions/" rel="tag">spring in actions</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/sql/" rel="tag">sql</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/ssh/" rel="tag">ssh</a><span class="sidebar-module-list-count">2</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/swagger/" rel="tag">swagger</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/system-design/" rel="tag">system design</a><span class="sidebar-module-list-count">2</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/template/" rel="tag">template</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/tmux/" rel="tag">tmux</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/tree/" rel="tag">tree</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/vscode/" rel="tag">vscode</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/wordgrep/" rel="tag">wordgrep</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/zeppelin/" rel="tag">zeppelin</a><span class="sidebar-module-list-count">1</span></li></ul>
+  </div>
+
+
+
+  
+  <div class="sidebar-module">
+    <h4>Tag Cloud</h4>
+    <p class="tagcloud">
+      <a href="/tags/CVA/" style="font-size: 10px;">CVA</a> <a href="/tags/algorithm/" style="font-size: 20px;">algorithm</a> <a href="/tags/angular/" style="font-size: 17.14px;">angular</a> <a href="/tags/aws/" style="font-size: 15.71px;">aws</a> <a href="/tags/c/" style="font-size: 10px;">c++</a> <a href="/tags/checkstyle/" style="font-size: 10px;">checkstyle</a> <a href="/tags/cloud-architecture/" style="font-size: 11.43px;">cloud architecture</a> <a href="/tags/coverage/" style="font-size: 10px;">coverage</a> <a href="/tags/design/" style="font-size: 10px;">design</a> <a href="/tags/django/" style="font-size: 11.43px;">django</a> <a href="/tags/docker/" style="font-size: 15.71px;">docker</a> <a href="/tags/dp/" style="font-size: 10px;">dp</a> <a href="/tags/dynamo/" style="font-size: 11.43px;">dynamo</a> <a href="/tags/elasticsearch/" style="font-size: 10px;">elasticsearch</a> <a href="/tags/emacs/" style="font-size: 10px;">emacs</a> <a href="/tags/emr/" style="font-size: 11.43px;">emr</a> <a href="/tags/fzf/" style="font-size: 10px;">fzf</a> <a href="/tags/general/" style="font-size: 10px;">general</a> <a href="/tags/gerrit/" style="font-size: 10px;">gerrit</a> <a href="/tags/git/" style="font-size: 12.86px;">git</a> <a href="/tags/github/" style="font-size: 10px;">github</a> <a href="/tags/google/" style="font-size: 10px;">google</a> <a href="/tags/graph/" style="font-size: 10px;">graph</a> <a href="/tags/hadoop/" style="font-size: 10px;">hadoop</a> <a href="/tags/hexo/" style="font-size: 10px;">hexo</a> <a href="/tags/invoke/" style="font-size: 10px;">invoke</a> <a href="/tags/jacoco/" style="font-size: 10px;">jacoco</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/jekyll/" style="font-size: 10px;">jekyll</a> <a href="/tags/jenkins/" style="font-size: 10px;">jenkins</a> <a href="/tags/kibana/" style="font-size: 10px;">kibana</a> <a href="/tags/mailchimp/" style="font-size: 10px;">mailchimp</a> <a href="/tags/maven/" style="font-size: 10px;">maven</a> <a href="/tags/mgmt/" style="font-size: 10px;">mgmt</a> <a href="/tags/mockito/" style="font-size: 10px;">mockito</a> <a href="/tags/mybatis/" style="font-size: 10px;">mybatis</a> <a href="/tags/mysql/" style="font-size: 11.43px;">mysql</a> <a href="/tags/nosql/" style="font-size: 10px;">nosql</a> <a href="/tags/oauth/" style="font-size: 10px;">oauth</a> <a href="/tags/proxy/" style="font-size: 10px;">proxy</a> <a href="/tags/rake/" style="font-size: 10px;">rake</a> <a href="/tags/regex/" style="font-size: 10px;">regex</a> <a href="/tags/rest/" style="font-size: 10px;">rest</a> <a href="/tags/ripgrep/" style="font-size: 10px;">ripgrep</a> <a href="/tags/ruby/" style="font-size: 10px;">ruby</a> <a href="/tags/spark/" style="font-size: 18.57px;">spark</a> <a href="/tags/spring-in-action/" style="font-size: 14.29px;">spring in action</a> <a href="/tags/spring-in-actions/" style="font-size: 10px;">spring in actions</a> <a href="/tags/sql/" style="font-size: 10px;">sql</a> <a href="/tags/ssh/" style="font-size: 11.43px;">ssh</a> <a href="/tags/swagger/" style="font-size: 10px;">swagger</a> <a href="/tags/system-design/" style="font-size: 11.43px;">system design</a> <a href="/tags/template/" style="font-size: 10px;">template</a> <a href="/tags/tmux/" style="font-size: 10px;">tmux</a> <a href="/tags/tree/" style="font-size: 10px;">tree</a> <a href="/tags/vscode/" style="font-size: 10px;">vscode</a> <a href="/tags/wordgrep/" style="font-size: 10px;">wordgrep</a> <a href="/tags/zeppelin/" style="font-size: 10px;">zeppelin</a>
+    </p>
+  </div>
+
+
+  
+  <div class="sidebar-module">
+    <h4>Archives</h4>
+    <ul class="sidebar-module-list"><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2021/06/">6월 2021</a><span class="sidebar-module-list-count">3</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2020/09/">9월 2020</a><span class="sidebar-module-list-count">2</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2020/04/">4월 2020</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2019/11/">11월 2019</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2019/08/">8월 2019</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2019/05/">5월 2019</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2019/04/">4월 2019</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2019/02/">2월 2019</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2019/01/">1월 2019</a><span class="sidebar-module-list-count">4</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2018/12/">12월 2018</a><span class="sidebar-module-list-count">2</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2018/11/">11월 2018</a><span class="sidebar-module-list-count">2</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2018/10/">10월 2018</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2018/08/">8월 2018</a><span class="sidebar-module-list-count">4</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2018/07/">7월 2018</a><span class="sidebar-module-list-count">5</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2018/06/">6월 2018</a><span class="sidebar-module-list-count">5</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2018/05/">5월 2018</a><span class="sidebar-module-list-count">4</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2018/04/">4월 2018</a><span class="sidebar-module-list-count">4</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2018/03/">3월 2018</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2018/02/">2월 2018</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2018/01/">1월 2018</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2017/12/">12월 2017</a><span class="sidebar-module-list-count">2</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2017/11/">11월 2017</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2017/10/">10월 2017</a><span class="sidebar-module-list-count">2</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2017/09/">9월 2017</a><span class="sidebar-module-list-count">2</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2017/07/">7월 2017</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2017/03/">3월 2017</a><span class="sidebar-module-list-count">2</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2017/02/">2월 2017</a><span class="sidebar-module-list-count">2</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2016/12/">12월 2016</a><span class="sidebar-module-list-count">3</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2016/11/">11월 2016</a><span class="sidebar-module-list-count">12</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2016/07/">7월 2016</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2016/06/">6월 2016</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2016/04/">4월 2016</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2016/03/">3월 2016</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2016/02/">2월 2016</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2016/01/">1월 2016</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2015/12/">12월 2015</a><span class="sidebar-module-list-count">2</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2015/11/">11월 2015</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2015/10/">10월 2015</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2015/08/">8월 2015</a><span class="sidebar-module-list-count">2</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2015/07/">7월 2015</a><span class="sidebar-module-list-count">4</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2015/06/">6월 2015</a><span class="sidebar-module-list-count">5</span></li></ul>
+  </div>
+
+
+
+  
+  <div class="sidebar-module">
+    <h4>Recents</h4>
+    <ul class="sidebar-module-list">
+      
+        <li>
+          <a href="/2021/06/13/top-K-problem/">Top K problem</a>
+        </li>
+      
+        <li>
+          <a href="/2021/06/12/consistent-hashing/">Design distributed Cache</a>
+        </li>
+      
+        <li>
+          <a href="/2021/06/03/distributed-message-queue/">distribute message queue</a>
+        </li>
+      
+        <li>
+          <a href="/2020/09/06/design-patterns/">design patterns</a>
+        </li>
+      
+        <li>
+          <a href="/2020/08/31/wordgrep-pp/">WordGrep Privacy Policy</a>
+        </li>
+      
+    </ul>
+  </div>
+
+
+
+        </div>
+    </div>
+  </div>
+  <footer class="blog-footer">
+  <div class="container">
+    <div id="footer-info" class="inner">
+      &copy; 2021 @nberserk<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+  
+<script>
+  var disqus_shortname = 'nberserk';
+  
+  (function(){
+    var dsq = document.createElement('script');
+    dsq.type = 'text/javascript';
+    dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/count.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js" integrity="sha384-8gBf6Y4YYq7Jx97PIqmTwLPin4hxIzQw5aDmUg/DDhul9fFpbbLcLh3nTIIDJKhx" crossorigin="anonymous"></script>
+
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+</body>
+</html>

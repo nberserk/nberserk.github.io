@@ -1,0 +1,1032 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Inertia</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="site.desc">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Inertia">
+<meta property="og:url" content="http://nberserk.github.io/page/5/index.html">
+<meta property="og:site_name" content="Inertia">
+<meta property="og:description" content="site.desc">
+<meta property="og:locale" content="ko_KR">
+<meta property="article:author" content="@nberserk">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="Inertia" type="application/atom+xml">
+  
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css" integrity="sha384-XdYbMnZ/QjLh6iI4ogqCTaIjrFk87ip+ekIjefZch0Y+PvJ8CDYtEs1ipDmPorQ+" crossorigin="anonymous">
+
+  
+<link rel="stylesheet" href="/css/styles.css">
+
+  
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body>
+  <nav class="navbar navbar-inverse">
+  <div class="container">
+    <!-- Brand and toggle get grouped for better mobile display -->
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#main-menu-navbar" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      
+    </div>
+
+    <!-- Collect the nav links, forms, and other content for toggling -->
+    <div class="collapse navbar-collapse" id="main-menu-navbar">
+      <ul class="nav navbar-nav">
+        
+          <li><a class=""
+                 href="/index.html">Home</a></li>
+        
+          <li><a class=""
+                 href="/archives/">Archives</a></li>
+        
+      </ul>
+
+      <!--
+      <ul class="nav navbar-nav navbar-right">
+        
+          <li><a href="/atom.xml" title="RSS Feed"><i class="fa fa-rss"></i></a></li>
+        
+      </ul>
+      -->
+    </div><!-- /.navbar-collapse -->
+  </div><!-- /.container-fluid -->
+</nav>
+
+  <div class="container">
+    <div class="blog-header">
+  <h1 class="blog-title">Inertia</h1>
+  
+</div>
+
+    <div class="row">
+        <div class="col-sm-8 blog-main">
+          
+  
+    <article id="post-sql-fallback" class="article article-type-post" itemscope itemprop="blogPost">
+
+  <header class="article-header">
+    
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/04/03/sql-fallback/">implement fallback in sql script</a>
+    </h1>
+  
+
+
+  </header>
+
+  <div class="article-meta">
+    <div class="article-datetime">
+  <a href="/2018/04/03/sql-fallback/" class="article-date"><time datetime="2018-04-03T15:00:00.000Z" itemprop="datePublished">2018-04-04</time></a>
+</div>
+
+    
+    
+
+  </div>
+  <div class="article-inner">
+
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>안드로이드에서 설정된 로케일이 en-US 일때 리소스를 찾는 순서는 en-US -&gt; en -&gt; default 이런식의 <a href="https://developer.android.com/guide/topics/resources/multilingual-support.html" target="_blank" rel="noopener">fallback logic</a> 이 있다. 그래서 최대한 specific 한 리소스를 먼저 보여주고 없으면 그다음 그다음 후보를 찾아서 표시해주는 식이 된다. 이런 fallback logic은 비교적 잘 알려져 있고, 다국어 표기시에 많이 쓰이는 방식이다.</p>
+<p>이 fallback logic을 서버 단에서 한다고 생각하면 어떻게 구현할 수 있을까. 이것을 정리 해보자.</p>
+<h2 id="schema"><a href="#schema" class="headerlink" title="schema"></a>schema</h2><p>스키마는 단순화하여 아래처럼 정의 하고..</p>
+<p><img src="/images/fallback-erd.png" alt="schema"></p>
+<p><a href="/assets/fallback.sql">sql 스크립트</a> 도 첨부.</p>
+<h2 id="test-data"><a href="#test-data" class="headerlink" title="test data"></a>test data</h2><p>아래처럼 테스트를 위한 데이터를 입력.</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> LOCALE(locale) <span class="keyword">VALUES</span> (<span class="string">'en'</span>), (<span class="string">'en-US'</span>), (<span class="string">'ko-KR'</span>), (<span class="string">'ko'</span>);</span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> <span class="keyword">STRING</span>(fqdn) <span class="keyword">VALUES</span> (<span class="string">'store.hello'</span>);</span><br><span class="line"><span class="keyword">SET</span> @<span class="keyword">sid</span> = <span class="keyword">LAST_INSERT_ID</span>();</span><br><span class="line"><span class="keyword">select</span> * <span class="keyword">from</span> <span class="keyword">STRING</span>;</span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> LOCALIZED_STRING(string_id, locale_id, <span class="string">`i18n_string`</span>) <span class="keyword">VALUES</span> (@<span class="keyword">sid</span>, <span class="number">1</span>, <span class="string">'hello-en'</span>), (@<span class="keyword">sid</span>,<span class="number">2</span>,<span class="string">'hello en-US'</span>), (@<span class="keyword">sid</span>,<span class="number">3</span>,<span class="string">'안녕하세요 ko-KR'</span>), (@<span class="keyword">sid</span>,<span class="number">4</span>, <span class="string">'hello ko'</span>);</span><br></pre></td></tr></table></figure>
+<h2 id="fallback-logic"><a href="#fallback-logic" class="headerlink" title="fallback logic"></a>fallback logic</h2><p>sql 문의 union 문을 이용해서 fallback을 아래처럼 구현할 수 있다. 포인트는 <code>sequence</code> 변수로 우선순위를 준다는 사실. 아래에서 ORDER 부분을 빼고 실행하면 2줄이 나오는데 <code>LIMIT 1</code>으로 우선순위가 높은 것남 남기는 것임.</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="number">1</span> <span class="keyword">as</span> seq, LS.<span class="string">`i18n_string`</span> <span class="keyword">FROM</span> <span class="keyword">STRING</span> S</span><br><span class="line">  <span class="keyword">INNER</span> <span class="keyword">JOIN</span> LOCALIZED_STRING LS <span class="keyword">ON</span> S.id=LS.string_id</span><br><span class="line"><span class="keyword">INNER</span> <span class="keyword">JOIN</span> LOCALE L <span class="keyword">ON</span> LS.locale_id = L.id</span><br><span class="line"><span class="keyword">WHERE</span> L.locale=<span class="string">'en-US'</span> <span class="keyword">AND</span> S.fqdn=<span class="string">'store.hello'</span></span><br><span class="line"><span class="keyword">UNION</span></span><br><span class="line"><span class="keyword">SELECT</span> <span class="number">2</span> <span class="keyword">as</span> seq, LS.<span class="string">`i18n_string`</span> <span class="keyword">FROM</span> <span class="keyword">STRING</span> S</span><br><span class="line">  <span class="keyword">INNER</span> <span class="keyword">JOIN</span> LOCALIZED_STRING LS <span class="keyword">ON</span> S.id=LS.string_id</span><br><span class="line">  <span class="keyword">INNER</span> <span class="keyword">JOIN</span> LOCALE L <span class="keyword">ON</span> LS.locale_id = L.id</span><br><span class="line"><span class="keyword">WHERE</span> L.locale=<span class="string">'en'</span> <span class="keyword">AND</span> S.fqdn=<span class="string">'store.hello'</span></span><br><span class="line"><span class="keyword">ORDER</span> <span class="keyword">BY</span> seq <span class="keyword">ASC</span> <span class="keyword">LIMIT</span> <span class="number">1</span>;</span><br></pre></td></tr></table></figure>
+<h2 id="fallback-logic-using-GROUP-BY"><a href="#fallback-logic-using-GROUP-BY" class="headerlink" title="fallback logic - using GROUP BY"></a>fallback logic - using GROUP BY</h2><p>위의 경우는 UNION 을 사용했는데 <code>GROUP BY</code>를 사용할 수도 있다.</p>
+<table>
+<thead>
+<tr>
+<th>id</th>
+<th>locale</th>
+<th>i18n_string</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>NULL</td>
+<td>dog</td>
+</tr>
+<tr>
+<td>1</td>
+<td>ko-KR</td>
+<td>강아지</td>
+</tr>
+<tr>
+<td>2</td>
+<td>NULL</td>
+<td>sky</td>
+</tr>
+<tr>
+<td>2</td>
+<td>ko-KR</td>
+<td>하늘</td>
+</tr>
+</tbody>
+</table>
+<p>위의 row에서 각 string의 ko-KR 을 먼저 사용하고 없으면 default(NULL)로 fallback 한다고 하면 아래처럼 sql 문을 작성할 수 있다. 이렇게 하면 우선순위가 떨어지는 locale(NULL)은 없어지고 가장 specific한 ko-KR의 번역된 스트링만 남게 된다.</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="keyword">id</span>, locale, i18n_string</span><br><span class="line"><span class="keyword">FROM</span></span><br><span class="line">(<span class="keyword">SELECT</span> S.id, L.locale, LS.i18n_string</span><br><span class="line"><span class="keyword">FROM</span> <span class="keyword">STRING</span> S</span><br><span class="line"><span class="keyword">INNER</span> <span class="keyword">JOIN</span> LOCALIZED_STRING LS <span class="keyword">ON</span> S.id=LS.string_id</span><br><span class="line"><span class="keyword">INNER</span> <span class="keyword">JOIN</span> LOCALE L <span class="keyword">ON</span> LS.locale_id = L.id <span class="keyword">ORDER</span> <span class="keyword">BY</span> L.locale <span class="keyword">DESC</span>) <span class="keyword">as</span> SUB</span><br><span class="line"><span class="keyword">GROUP</span> <span class="keyword">BY</span> <span class="keyword">id</span></span><br></pre></td></tr></table></figure>
+<h2 id="References"><a href="#References" class="headerlink" title="References"></a>References</h2>
+      
+    </div>
+
+    
+      
+
+    
+
+    <footer class="article-footer">
+      <a data-url="http://nberserk.github.io/2018/04/03/sql-fallback/" data-id="ckqe4m42o001qrcqyqqobziag" class="article-share-link">
+        <i class="fa fa-share"></i> Share
+      </a>
+      
+        <a href="http://nberserk.github.io/2018/04/03/sql-fallback/#disqus_thread" class="article-comment-link">
+          <i class="fa fa-comment"></i> Comments
+        </a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/sql/" rel="tag">sql</a></li></ul>
+
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-mysql" class="article article-type-post" itemscope itemprop="blogPost">
+
+  <header class="article-header">
+    
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/04/02/mysql/">mysql script examples</a>
+    </h1>
+  
+
+
+  </header>
+
+  <div class="article-meta">
+    <div class="article-datetime">
+  <a href="/2018/04/02/mysql/" class="article-date"><time datetime="2018-04-02T15:00:00.000Z" itemprop="datePublished">2018-04-03</time></a>
+</div>
+
+    
+    
+
+  </div>
+  <div class="article-inner">
+
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>mysql table 모델링을 하려면 <a href="https://www.mysql.com/products/workbench/" target="_blank" rel="noopener">mysql workbench</a>를 주로 사용한다. 모델링 쿼리 등에 아주 유용하게 사용할 수 있으니 툴 사용법을 배워 놓으면 좋다.</p>
+<h2 id="VERSION-major-minor-patch-명을-숫자로-비교하기"><a href="#VERSION-major-minor-patch-명을-숫자로-비교하기" class="headerlink" title="VERSION(major.minor.patch) 명을 숫자로 비교하기"></a>VERSION(major.minor.patch) 명을 숫자로 비교하기</h2><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> T.version , </span><br><span class="line"><span class="keyword">CAST</span>(SUBSTRING_INDEX(T.version, <span class="string">'.'</span>, <span class="number">1</span>) <span class="keyword">AS</span> SIGNED) major,</span><br><span class="line">  <span class="keyword">CAST</span>(SUBSTRING_INDEX(SUBSTRING_INDEX(T.version, <span class="string">'.'</span>, <span class="number">-2</span>),<span class="string">'.'</span>,<span class="number">1</span>) <span class="keyword">AS</span> SIGNED)  minor,</span><br><span class="line">  <span class="keyword">CAST</span>(SUBSTRING_INDEX(T.version, <span class="string">'.'</span>, <span class="number">-1</span>) <span class="keyword">AS</span> SIGNEd)  <span class="keyword">patch</span></span><br><span class="line"><span class="keyword">from</span> VER T</span><br><span class="line">  <span class="keyword">order</span> <span class="keyword">by</span> major, minor, <span class="keyword">patch</span>;</span><br></pre></td></tr></table></figure>
+<p>결과는 아래처럼. 스트링으로 비교하면 1.10.0이 1.2.0 보다 앞에 오게 되어서 숫자로 CAST 처리를 한 것임</p>
+<table>
+<thead>
+<tr>
+<th>version</th>
+<th>major</th>
+<th>minor</th>
+<th>patch</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>‘1.2.0’</td>
+<td>‘1’</td>
+<td>‘2’</td>
+<td>‘0’</td>
+</tr>
+<tr>
+<td>‘1.10.0’</td>
+<td>‘1’</td>
+<td>‘10’</td>
+<td>‘0’</td>
+</tr>
+<tr>
+<td>‘2.0.0’</td>
+<td>‘2’</td>
+<td>‘0’</td>
+<td>‘0’</td>
+</tr>
+</tbody>
+</table>
+<h2 id="alter-delete"><a href="#alter-delete" class="headerlink" title="alter/delete"></a>alter/delete</h2><p>alter/delete시 foreign_key constraint가 걸려 있으면 명령이 실패하는데, <code>FOREIGN_KEY_CHECKS=0</code>으로 해주면 이 제약을 없앨 수 있다.(아래 참고)</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"># delete all rows in a table</span><br><span class="line"><span class="keyword">delete</span> <span class="keyword">from</span> table_name;</span><br><span class="line"></span><br><span class="line"># alter table</span><br><span class="line"><span class="keyword">set</span> FOREIGN_KEY_CHECKS=<span class="number">0</span>;</span><br><span class="line"><span class="keyword">alter</span> <span class="keyword">table</span> table_name <span class="keyword">modify</span> <span class="keyword">id</span> <span class="built_in">BIGINT</span>(<span class="number">20</span>) <span class="keyword">NOT</span> <span class="literal">NULL</span> AUTO_INCREMENT;</span><br></pre></td></tr></table></figure>
+<h2 id="import-csv-file"><a href="#import-csv-file" class="headerlink" title="import csv file"></a>import csv file</h2><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"># path should be full path</span><br><span class="line"><span class="keyword">LOAD</span> <span class="keyword">DATA</span> <span class="keyword">LOCAL</span> <span class="keyword">INFILE</span> <span class="string">'/file.csv'</span> <span class="keyword">INTO</span> <span class="keyword">TABLE</span> table_name <span class="keyword">FIELDS</span> <span class="keyword">TERMINATED</span> <span class="keyword">BY</span> <span class="string">','</span> <span class="keyword">ENCLOSED</span> <span class="keyword">BY</span> <span class="string">'"'</span> <span class="keyword">LINES</span> <span class="keyword">TERMINATED</span> <span class="keyword">BY</span> <span class="string">'\n'</span> (colum1, column2, column3);</span><br></pre></td></tr></table></figure>
+<h2 id="subquery"><a href="#subquery" class="headerlink" title="subquery"></a>subquery</h2><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"># `ORDER_BY` 때문에 name을 제거하지 못해서 Select문으로 한번더 싼 예제. 서브쿼리 다음에 그 테이블을 대변하는 테이블 명(아래는 C)이 있어야 함.</span><br><span class="line"><span class="keyword">select</span> <span class="keyword">id</span> <span class="keyword">from</span> (<span class="keyword">select</span> * <span class="keyword">from</span> Customer ORDER_BY <span class="keyword">name</span>) C;</span><br></pre></td></tr></table></figure>
+<h2 id="create-ERD-from-mysql-workbench"><a href="#create-ERD-from-mysql-workbench" class="headerlink" title="create ERD from mysql workbench"></a>create ERD from mysql workbench</h2><ol>
+<li>Database &gt; reverse engineer</li>
+<li>select schema &amp; filter tables you want to add to your diagram</li>
+<li>done</li>
+</ol>
+<h2 id="removing-foreign-key-constraint-in-production"><a href="#removing-foreign-key-constraint-in-production" class="headerlink" title="removing foreign key constraint in production"></a>removing foreign key constraint in production</h2><p><a href="https://dba.stackexchange.com/questions/15388/where-should-you-define-foreign-keys" target="_blank" rel="noopener">https://dba.stackexchange.com/questions/15388/where-should-you-define-foreign-keys</a> 여기를 보면 설명이 나오는데 트래픽이 많이 몰리는 db인 경우에는 lock으로 인해서 동시성이 떨어지는 현상이 발생하므로 foreign key를 쓰지 않을 수도 있다. </p>
+<p>그래서 우리의 경우는 dev/stg tier에서는 constraint를 걸어 로직 검증을 한후, prd로 갈때는 제거하는 방식을 하고 있다. </p>
+<h2 id="References"><a href="#References" class="headerlink" title="References"></a>References</h2><ol>
+<li><a href="https://dev.mysql.com/doc/workbench/en/wb-reverse-engineer-create-script.html" target="_blank" rel="noopener">mysql workbench-reserve engineering from script</a></li>
+</ol>
+
+      
+    </div>
+
+    
+      
+
+    
+
+    <footer class="article-footer">
+      <a data-url="http://nberserk.github.io/2018/04/02/mysql/" data-id="ckqe4m42n001prcqy9bg86k7p" class="article-share-link">
+        <i class="fa fa-share"></i> Share
+      </a>
+      
+        <a href="http://nberserk.github.io/2018/04/02/mysql/#disqus_thread" class="article-comment-link">
+          <i class="fa fa-comment"></i> Comments
+        </a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/mysql/" rel="tag">mysql</a></li></ul>
+
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-autora-architecture" class="article article-type-post" itemscope itemprop="blogPost">
+
+  <header class="article-header">
+    
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/03/01/autora-architecture/">Aurora architecture</a>
+    </h1>
+  
+
+
+  </header>
+
+  <div class="article-meta">
+    <div class="article-datetime">
+  <a href="/2018/03/01/autora-architecture/" class="article-date"><time datetime="2018-03-01T15:00:00.000Z" itemprop="datePublished">2018-03-02</time></a>
+</div>
+
+    
+    
+
+  </div>
+  <div class="article-inner">
+
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>Amazon Aurora는 아마존의 managed DB service인데, 최근에 mysql이나 postgress에서 많이 갈아타는 듯 하다.<br>우연히 <a href="https://www.allthingsdistributed.com/files/p1041-verbitski.pdf" target="_blank" rel="noopener">aurora architecutre에 관한 논문</a>을 보았는데 인상깊은 부분들이 있어 여기에 리뷰를 해보려 한다.</p>
+<p>3가지 큰 포인트는 :</p>
+<ol>
+<li>building storage as an independent fault-tolerant and self-healing service</li>
+<li>only writing redo logs</li>
+<li>make backup&amp;recovery from one time expensive operations to asynchronous operations across a large distributed fleets.</li>
+</ol>
+<h2 id="Durability"><a href="#Durability" class="headerlink" title="Durability"></a>Durability</h2><p>quorum-based voting protocol!</p>
+<p>aws에서 사용하는 az(availability zone)은 3개. Aurora는 하나의 AZ가 고장나도 failover할 수 있는것을 목표임. 그래서 각 AZ에 2개의 storage node를 두고 총 6개의 replication을 유지. 이렇게 해서 read는 3/6 quorum, write는 4/6 quorum 을 기준으로 둔다. 즉, 6개 노드중 3개의 노드가 동일한 값을 주면 그것을 성공으로 간주, write의 경우는 4개의 노드에서 같은 응답을 받으면 성공으로 간주 하게 된다. 하나의 AZ는 실패해 되게 설계를 했기에 OS나 security updates등도 쉽게 적용할 수 있게 되었다. 사용자도 모르게.</p>
+<p>만약 AZ failure가 2개 이상의 영역에서 발행하면 어떻게 될까? 물론 적은 확률이겠지만 그것까지 고려해서 storage를 10G 단위의 Protection group(PG)로 나누어서 recovery time을 줄일 수 있음. 10Gbps망에서 10G는 10초면 복구할 수 있음.</p>
+<h2 id="Log-equlas-DB"><a href="#Log-equlas-DB" class="headerlink" title="Log equlas DB"></a>Log equlas DB</h2><p>storage node로 전송하는 것은 redo log뿐이다. 이것이 좀 획기적인듯.</p>
+<p>database page를 매번 처음부터 생성하는 것은 비싼 작업이기 때문에 중간중간에 snapshop을 만든다. 그래서 recovery등은 checkpointing과는 다르게 더 빨리 recovery가 가능함.</p>
+<p>redo log는 순차적으로 증가하는 Log Sequence Number(LSN)을 가짐.</p>
+<p>recovery시에는 VCL(Volume complete LSN)이후의 LSN은 모두 버림. 더 디테일하게 들어가서는 VCL보다 작은 LSN중에서 highest CPL(Consistency point LSN)을 VDL(Volume durable LSN)이라고 정의하고 VDL보다 큰 LSN을 모두 버린다. CPL은 transaction단위가 끝난 LSN이라고 보면 될듯.</p>
+<h2 id="References"><a href="#References" class="headerlink" title="References"></a>References</h2><ul>
+<li><a href="ttp://checkstyle.sourceforge.net/index.html" target="_blank" rel="noopener">Amazon Aurora: Design consideration for high throughput cloud-native relational dababases</a></li>
+<li><a href="https://aws.amazon.com/blogs/database/amazon-aurora-under-the-hood-quorum-reads-and-mutating-state/" target="_blank" rel="noopener">Amazon Aurora Under the Hood: Quorum Reads and Mutating State</a></li>
+</ul>
+
+      
+    </div>
+
+    
+      
+
+    
+
+    <footer class="article-footer">
+      <a data-url="http://nberserk.github.io/2018/03/01/autora-architecture/" data-id="ckqe4m42n001orcqygukbnoc0" class="article-share-link">
+        <i class="fa fa-share"></i> Share
+      </a>
+      
+        <a href="http://nberserk.github.io/2018/03/01/autora-architecture/#disqus_thread" class="article-comment-link">
+          <i class="fa fa-comment"></i> Comments
+        </a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/aws/" rel="tag">aws</a></li></ul>
+
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-checkstyle" class="article article-type-post" itemscope itemprop="blogPost">
+
+  <header class="article-header">
+    
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/02/22/checkstyle/">enforce codestyle</a>
+    </h1>
+  
+
+
+  </header>
+
+  <div class="article-meta">
+    <div class="article-datetime">
+  <a href="/2018/02/22/checkstyle/" class="article-date"><time datetime="2018-02-22T15:00:00.000Z" itemprop="datePublished">2018-02-23</time></a>
+</div>
+
+    
+    
+
+  </div>
+  <div class="article-inner">
+
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>소스코드 퀄러티를 높이기 위한 일환으로 code style을 맞추는 작업을 maven을 사용하는 java 프로젝트에서 사용하는 방법이다.</p>
+<p>code style을 강제하는 방법은 report를 생성하여 공유하거나, 빌드 단계에서 체크하여 스타일이 맞지 않으면 에러를 내게 하는 방법등이 있을 수 있지만 개인적으로는 후자를 추천한다.<br>에러가 나면 업스트림에 커밋을 할 수 없고 그 법칙을 지킬수 밖에 없기 때문이다. 전자의 경우 누군가 나서서 리포트를 공유하고 고쳐 달라고 핑을 해야 하는데 여러모로 소모적인 프로세스이기 때문이다.</p>
+<h2 id="checkstyle"><a href="#checkstyle" class="headerlink" title="checkstyle"></a>checkstyle</h2><p>가장 많이 사용되는것이 <a href="http://checkstyle.sourceforge.net/index.html" target="_blank" rel="noopener">checkstyle</a></p>
+<p><a href="https://maven.apache.org/plugins/maven-checkstyle-plugin/index.html" target="_blank" rel="noopener">maven checkstyle plugin</a>이 있기 때문에 이것을 사용하면 maven과 쉽게 연동할 수 있다.</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">plugin</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.apache.maven.plugins<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>maven-checkstyle-plugin<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">version</span>&gt;</span>3.0.0<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">configuration</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">configLocation</span>&gt;</span>checkstyle.xml<span class="tag">&lt;/<span class="name">configLocation</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">configuration</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">plugin</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>위처럼 <configlocation> tag를 사용하면 custom rules을 사용할 수 있다. <a href="https://github.com/checkstyle/checkstyle/blob/master/src/main/resources/google_checks.xml" target="_blank" rel="noopener">google rule</a> 을 참고하여 룰을 가감하면 된다.</configlocation></p>
+<p>또한 빌드 단계에서 체크를 하고 싶으면 아래 처럼 executions tag로 순서를 바꿔줄 수 있다. 이렇게 하면 checkstyle룰을 어기면 빌드가 실패하게 된다.</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">plugin</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.apache.maven.plugins<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>maven-checkstyle-plugin<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>3.0.0<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependencies</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.puppycrawl.tools<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>checkstyle<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">version</span>&gt;</span>8.8<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.samsung.knowledge.billing<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>build-tools<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">version</span>&gt;</span>0.1.0<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependencies</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">executions</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">execution</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">id</span>&gt;</span>validate<span class="tag">&lt;/<span class="name">id</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">phase</span>&gt;</span>validate<span class="tag">&lt;/<span class="name">phase</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">configuration</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">configLocation</span>&gt;</span>checkstyle.xml<span class="tag">&lt;/<span class="name">configLocation</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">encoding</span>&gt;</span>UTF-8<span class="tag">&lt;/<span class="name">encoding</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">consoleOutput</span>&gt;</span>true<span class="tag">&lt;/<span class="name">consoleOutput</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">failsOnError</span>&gt;</span>true<span class="tag">&lt;/<span class="name">failsOnError</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">failOnViolation</span>&gt;</span>true<span class="tag">&lt;/<span class="name">failOnViolation</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">violationSeverity</span>&gt;</span>warning<span class="tag">&lt;/<span class="name">violationSeverity</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">configuration</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">goals</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">goal</span>&gt;</span>check<span class="tag">&lt;/<span class="name">goal</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">goals</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">execution</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">executions</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">plugin</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h2 id="checkstyle-in-multi-module-project"><a href="#checkstyle-in-multi-module-project" class="headerlink" title="checkstyle in multi module project"></a>checkstyle in multi module project</h2><p> 만약 multi-module project 라면 같은 설정을 sub module 마다 해줘야 하기 때문에, checkstyle을 실행하는 모듈을 만들고 다른 모듈이 이것을 사용하게 디펜던시를 걸면 공용화 할 수 있다.<br> 요기에 예시가 있으니 참고.<br> <a href="https://maven.apache.org/plugins/maven-checkstyle-plugin/examples/multi-module-config.html" target="_blank" rel="noopener">https://maven.apache.org/plugins/maven-checkstyle-plugin/examples/multi-module-config.html</a></p>
+<h2 id="References"><a href="#References" class="headerlink" title="References"></a>References</h2><ul>
+<li><a href="ttp://checkstyle.sourceforge.net/index.html" target="_blank" rel="noopener">checkstyle</a></li>
+</ul>
+<h2 id="revision-history"><a href="#revision-history" class="headerlink" title="revision history"></a>revision history</h2><ul>
+<li>2018/4/25, checkstyle in multi module project added</li>
+</ul>
+
+      
+    </div>
+
+    
+      
+
+    
+
+    <footer class="article-footer">
+      <a data-url="http://nberserk.github.io/2018/02/22/checkstyle/" data-id="ckqe4m42m001nrcqyqcdn15ey" class="article-share-link">
+        <i class="fa fa-share"></i> Share
+      </a>
+      
+        <a href="http://nberserk.github.io/2018/02/22/checkstyle/#disqus_thread" class="article-comment-link">
+          <i class="fa fa-comment"></i> Comments
+        </a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/checkstyle/" rel="tag">checkstyle</a></li></ul>
+
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-Github+Jenkins" class="article article-type-post" itemscope itemprop="blogPost">
+
+  <header class="article-header">
+    
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/01/08/Github+Jenkins/">Github + Jenkins</a>
+    </h1>
+  
+
+
+  </header>
+
+  <div class="article-meta">
+    <div class="article-datetime">
+  <a href="/2018/01/08/Github+Jenkins/" class="article-date"><time datetime="2018-01-08T15:00:00.000Z" itemprop="datePublished">2018-01-09</time></a>
+</div>
+
+    
+    
+
+  </div>
+  <div class="article-inner">
+
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>github PR을 테스트 할 수 있는 Jenkins job을 만들어 보자. 비교적 간단하지만 빈약한 문서, 여러가지 조합시 버그로 인한 exception등으로 결코 쉽지 않은 작업이었다.<br>그 중 제일은 역시나 회사 proxy때문 이였다.</p>
+<h2 id="Jenkins"><a href="#Jenkins" class="headerlink" title="Jenkins"></a>Jenkins</h2><p>내가 테스트 했던 버전은 아래와 같다.</p>
+<ul>
+<li>Jenkins version : 2.102</li>
+<li>plugin&gt; github pull request builder  : 1.39.0</li>
+</ul>
+<p>이 플로그인을 사용하면 아래처럼 PR에 테스트 결과 등을 표시할 수 있다. 일종의 proof build라고 봐도 됨. TC 뿐만이 아니고 여러개의 status를 추가할 수도 있다.</p>
+<p><img src="!--￼0--&gt;/assets/pr-check.png" alt="pr check"></p>
+<h3 id="GitHub-Pull-Request-Builder"><a href="#GitHub-Pull-Request-Builder" class="headerlink" title="GitHub Pull Request Builder"></a>GitHub Pull Request Builder</h3><p>설정 순서</p>
+<ol>
+<li>Jenkins&gt;Manage Jenkins&gt;Manage Plugins 에서<ul>
+<li><code>github pull request builder</code> 를 설치.</li>
+<li><code>github plugin</code>을 1.29 버전 이상으로 설치(1.28버전이 proxy지원 못하는 버그가 있음.)</li>
+</ul>
+</li>
+<li><p>Jenkins&gt;Configure System&gt; Github에서</p>
+<ul>
+<li>fill <code>https://&lt;enterprise github url&gt;/api/v3</code> 입력</li>
+<li>credential 추가.<ul>
+<li>github&gt;Settings&gt;Personal access tokens 에서 생성.</li>
+<li>Jenkins&gt;Credential&gt;System&gt;Global credentials&gt; add credential<ul>
+<li>Kind: <code>secret text</code> 선택</li>
+<li>secret에 github의 토큰을 기입</li>
+<li>ID에 적당한 이름을 적어주고</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>Jenkins&gt;Configure System&gt;github pull request build 에서</p>
+<ul>
+<li>github server api url 채워주고</li>
+<li>auto-manage webhooks 체크. 이걸 체크하면 웹훅을 자동으로 걸어준다.</li>
+</ul>
+</li>
+<li>Job 생성<ul>
+<li>select New Item &gt; FreeStyle</li>
+<li>source code Management<ul>
+<li>fille repository url,</li>
+<li>name as <code>origin</code>,</li>
+<li>refspec as <code>+refs/pull/${ghprbPullId}/*:refs/remotes/origin/pr/${ghprbPullId}/*</code>,</li>
+<li>branch specifier <code>${sha1}</code></li>
+</ul>
+</li>
+<li>Build Triggers<ul>
+<li>check <code>github pull request builder</code></li>
+<li>check <code>user github hooks for build triggering</code></li>
+<li>Advanced&gt;List of organizations. Their members will be whitelisted. &gt; 에 github orginization 이름을 써 준다.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ol>
+<h3 id="기타"><a href="#기타" class="headerlink" title="기타"></a>기타</h3><ul>
+<li>log 파일을 tail로 잡으면서 설정하기, 문서도 잘 없고, 로그로 유추해서 설정하는게 시간을 단축할 수 있는 길임.</li>
+<li>freestyle project로 job을 만들고 Build&gt;Invoke top-level maven targets으로 해야 에러가 안남. maven project로 빌드를 돌리면  <a href="https://github.com/jenkinsci/ghprb-plugin/issues/618" target="_blank" rel="noopener">이런 에러가.</a></li>
+</ul>
+<h2 id="References"><a href="#References" class="headerlink" title="References"></a>References</h2><ul>
+<li><a href="http://yaks-all-the-way-down.com/2016/04/22/Presenting-Git-Hub-Pull-Request-Builder.html#Organization" target="_blank" rel="noopener">이게 가장 잘 되어 있는 reference 였음. 그나마..</a></li>
+<li><a href="https://jakubstas.com/github-and-jenkins-pull-request-checking/#.WlVLMZP1Vrx" target="_blank" rel="noopener">https://jakubstas.com/github-and-jenkins-pull-request-checking/#.WlVLMZP1Vrx</a></li>
+<li><a href="https://gist.github.com/ostinelli/972cfdb4bce51d428d3b" target="_blank" rel="noopener">https://gist.github.com/ostinelli/972cfdb4bce51d428d3b</a></li>
+</ul>
+
+      
+    </div>
+
+    
+      
+
+    
+
+    <footer class="article-footer">
+      <a data-url="http://nberserk.github.io/2018/01/08/Github+Jenkins/" data-id="ckqe4m42l001lrcqywtpn54m7" class="article-share-link">
+        <i class="fa fa-share"></i> Share
+      </a>
+      
+        <a href="http://nberserk.github.io/2018/01/08/Github+Jenkins/#disqus_thread" class="article-comment-link">
+          <i class="fa fa-comment"></i> Comments
+        </a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/jenkins/" rel="tag">jenkins</a></li></ul>
+
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-rolling-hash" class="article article-type-post" itemscope itemprop="blogPost">
+
+  <header class="article-header">
+    
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/12/14/rolling-hash/">rolling hash</a>
+    </h1>
+  
+
+
+  </header>
+
+  <div class="article-meta">
+    <div class="article-datetime">
+  <a href="/2017/12/14/rolling-hash/" class="article-date"><time datetime="2017-12-14T15:00:00.000Z" itemprop="datePublished">2017-12-15</time></a>
+</div>
+
+    
+    
+
+  </div>
+  <div class="article-inner">
+
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>스트링에서 특정 substring이 있는지를 판단할때 유용하게 사용할 수 있는 rolling hash 알고리즘에 대해서 소개. 쉽고 유용한 알고리즘임.</p>
+<h2 id="intuition"><a href="#intuition" class="headerlink" title="intuition"></a>intuition</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">pattern = &quot;abc&quot;</span><br><span class="line">text = &quot;bcabc&quot;</span><br><span class="line">P = len(pattern)</span><br><span class="line">T = len(text)</span><br></pre></td></tr></table></figure>
+<p>brute force방식의 time complexity는 (P*T) 이다.</p>
+<p>우선 아이디어는 hash function을 정의해서 hash값을 비교하여 같은지 비교해서 match 후보들을 빠르게 필터링하는 것이다. hash function을 빠르게 구할수 있어야 한다.</p>
+<p>그래서 hash function을 이렇게 정의한다.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">base = 30(랜덤한 수)</span><br><span class="line">MOD = 큰 소수</span><br><span class="line">h(S) = &#123; s(0)*base^0 + s(1)*base^1 ... s(n-1)*base^(n-1) &#125; % MOD</span><br></pre></td></tr></table></figure>
+<p>그러면 text[0:2]까지의 해쉬는 패턴의 해쉬와 맞지 않으므로 문자열 비교없이 다음으로 넘어갈 수 있다.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">h(pattern) = &apos;a&apos;*30^2 + &apos;b&apos;*30 + &apos;c&apos;*30^0</span><br><span class="line">h(text[0:2]) = &apos;b&apos;*30^2 + &apos;c&apos;*30  + &apos;a&apos;*30^0</span><br><span class="line">h(text[1:2]) =         &apos;c&apos;30^2 + &apos;a&apos;*30 + &apos;b&apos;*30^0</span><br></pre></td></tr></table></figure>
+<p>그럼 이제 text[1:2]의 해쉬를 구해야 하는데<br>다음으로 넘어갈때는 이전 해쉬값에서 -‘b’*30^2를 뺀값에 base를 곱하고 새로 추가되는 ‘b’만 더해주면 된다. 이것을 식으로 나타내면 아래처럼 된다.</p>
+<blockquote>
+<p>h(n) = base<em>{h(n-1)-p[n]</em>30^(P-1)} + p[n+P]</p>
+</blockquote>
+<p>이때 한가지 주의할 점은 hash가 같다고 해도 문자열은 다를 수 있으므로 실제로 한번 체크를 해줘야 한다는 것이다. 이렇게 하면 time complexity를 O(T+P) 정도로 줄 일 수 있다.</p>
+<h2 id="problem"><a href="#problem" class="headerlink" title="problem"></a>problem</h2><ul>
+<li><a href="https://leetcode.com/problems/repeated-string-match/description/" target="_blank" rel="noopener">Repeated String match</a> , <a href="https://github.com/nberserk/codejam/blob/master/java/src/main/java/leetcode/RepeatedStringMatch_686.java" target="_blank" rel="noopener">solution</a></li>
+</ul>
+
+      
+    </div>
+
+    
+      
+
+    
+
+    <footer class="article-footer">
+      <a data-url="http://nberserk.github.io/2017/12/14/rolling-hash/" data-id="ckqe4m42k001krcqy4zkeltey" class="article-share-link">
+        <i class="fa fa-share"></i> Share
+      </a>
+      
+        <a href="http://nberserk.github.io/2017/12/14/rolling-hash/#disqus_thread" class="article-comment-link">
+          <i class="fa fa-comment"></i> Comments
+        </a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/algorithm/" rel="tag">algorithm</a></li></ul>
+
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-regular-expression" class="article article-type-post" itemscope itemprop="blogPost">
+
+  <header class="article-header">
+    
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/12/14/regular-expression/">regular expression</a>
+    </h1>
+  
+
+
+  </header>
+
+  <div class="article-meta">
+    <div class="article-datetime">
+  <a href="/2017/12/14/regular-expression/" class="article-date"><time datetime="2017-12-14T15:00:00.000Z" itemprop="datePublished">2017-12-15</time></a>
+</div>
+
+    
+    
+
+  </div>
+  <div class="article-inner">
+
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>잘 알아두면 피가 되고 살이 되는 정규 표현식에 대해서 정리해 보자.</p>
+<h2 id="lookahead-lookbehind"><a href="#lookahead-lookbehind" class="headerlink" title="lookahead, lookbehind"></a>lookahead, lookbehind</h2><p><code>4+9*10+7</code> 라는 식이 있다고 하자. 얘를 operator로 나누고 싶다고 하면 어떻게 해야 할까.</p>
+<p>처음에는 lookahead를 사용해서 아래와 같은 regex를 만들었지만 +* 같은 operator와 숫자가 섞인다.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">expression.split(&quot;(?=[-+()*/])&quot;);</span><br><span class="line">--&gt; [4, +9, *10, +7]</span><br></pre></td></tr></table></figure>
+<p>그래서 lookbehind까지 써주면 완벽하게 분리가 된다. isn’t it cool ?</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">expression.split(&quot;(?&lt;=[-+()*/])|(?=[-+()*/])&quot;);</span><br><span class="line">--&gt; [4, +, 9, *, 10, +, 7]</span><br></pre></td></tr></table></figure>
+<h2 id="references"><a href="#references" class="headerlink" title="references"></a>references</h2><ul>
+<li><a href="https://www.regular-expressions.info/tutorial.html" target="_blank" rel="noopener">https://www.regular-expressions.info/tutorial.html</a></li>
+</ul>
+
+      
+    </div>
+
+    
+      
+
+    
+
+    <footer class="article-footer">
+      <a data-url="http://nberserk.github.io/2017/12/14/regular-expression/" data-id="ckqe4m42l001mrcqy2pywj366" class="article-share-link">
+        <i class="fa fa-share"></i> Share
+      </a>
+      
+        <a href="http://nberserk.github.io/2017/12/14/regular-expression/#disqus_thread" class="article-comment-link">
+          <i class="fa fa-comment"></i> Comments
+        </a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/regex/" rel="tag">regex</a></li></ul>
+
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-classloader" class="article article-type-post" itemscope itemprop="blogPost">
+
+  <header class="article-header">
+    
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/11/24/classloader/">java classloader</a>
+    </h1>
+  
+
+
+  </header>
+
+  <div class="article-meta">
+    <div class="article-datetime">
+  <a href="/2017/11/24/classloader/" class="article-date"><time datetime="2017-11-24T15:00:00.000Z" itemprop="datePublished">2017-11-25</time></a>
+</div>
+
+    
+    
+
+  </div>
+  <div class="article-inner">
+
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>java가 어떻게 필요한 class 들을 로드하는지 한번쯤은 궁금해 했을 법한 내용인데 이제서야 정리해 본다.</p>
+<h2 id="class-loader-internal"><a href="#class-loader-internal" class="headerlink" title="class loader internal"></a>class loader internal</h2><p>아래 종류의 클래스 로더가 존재한다. System CL까지는 우리가 몰라서 그렇지 계속 사용하게 있던 CL 되겠다.</p>
+<ul>
+<li>bootstrap class loader : java runtime을 가지고 있는 루트 CL 되겠다</li>
+<li>extention CL : ‘java.ext.dirs’ 에 있는 클래스를 로드하는 CL</li>
+<li>System CL : -jar 혹은 classpath로 지정된 클래스를 로드하는 CL</li>
+<li>custom CL : 사용자가 지정 CL</li>
+</ul>
+<p>그렇다면 언제 custom CL이 필요할까?</p>
+<p>예들 들어보면, <a href="http://tomcat.apache.org/tomcat-7.0-doc/class-loader-howto.html" target="_blank" rel="noopener">java tomcat</a>을 보면 될것 같다. tomcat은 여러개의 war를 서빙할 수 있는데, 각 war는 같은 클래스를 가질 수 있다. 그렇게 되면 기존의 CL로는 로딩할 수 없는 한계가 있게 된다. 그래서 custom CL의 존재가 필요하게 되는 것이다.</p>
+<p>그리고 CL은 항상 parent CL을 넣어줘야만 생성할 수 있다. 따라서 CL은 트리처럼 hierarchy가 생기게 된다. 그 트리를 따라 내려가면서 클래스를 로드하게 된다. 루트 에서 먼저 찾아보고 없으면 그 자식 CL로 그 다음 자식.. 이런식이다. 이렇게 한 이유는 보안의 이유인데, custom CL가 standard Lib과 같은 클래스를 중복해서 정의하면 standard lib의 것이 아닌 다른 class가 로딩되게 할 수 있기 때문이다.</p>
+<h2 id="reference"><a href="#reference" class="headerlink" title="reference"></a>reference</h2><ul>
+<li><a href="http://www.onjava.com/pub/a/onjava/2005/01/26/classloading.html?page=1" target="_blank" rel="noopener">Internal of java class loading</a></li>
+<li><a href="http://tomcat.apache.org/tomcat-7.0-doc/class-loader-howto.html" target="_blank" rel="noopener">tomcat class loader</a></li>
+</ul>
+
+      
+    </div>
+
+    
+      
+
+    
+
+    <footer class="article-footer">
+      <a data-url="http://nberserk.github.io/2017/11/24/classloader/" data-id="ckqe4m42i001ircqydh4pea5d" class="article-share-link">
+        <i class="fa fa-share"></i> Share
+      </a>
+      
+        <a href="http://nberserk.github.io/2017/11/24/classloader/#disqus_thread" class="article-comment-link">
+          <i class="fa fa-comment"></i> Comments
+        </a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/java/" rel="tag">java</a></li></ul>
+
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-mailchimp" class="article article-type-post" itemscope itemprop="blogPost">
+
+  <header class="article-header">
+    
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/10/30/mailchimp/">mailchimp</a>
+    </h1>
+  
+
+
+  </header>
+
+  <div class="article-meta">
+    <div class="article-datetime">
+  <a href="/2017/10/30/mailchimp/" class="article-date"><time datetime="2017-10-30T15:00:00.000Z" itemprop="datePublished">2017-10-31</time></a>
+</div>
+
+    
+    
+
+  </div>
+  <div class="article-inner">
+
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>오픈 소스에 보면 항상 주제별로 메일링 리스트를 오픈하여 관리하는데, 이것은 mailman같은것으로 관리 되곤 했었다. 그래서 언젠가 이런곳에서도 혁신의 여지가 많이 있겠다 막연히 생각했었는데 그런 제품이 있었다. 이름하여 <a href="https://mailchimp.com/" target="_blank" rel="noopener">mailchimp</a>. subscriber수가 많아지면 유료이므로 선택시 참고할 것.</p>
+<h2 id="mailchimp"><a href="#mailchimp" class="headerlink" title="mailchimp"></a>mailchimp</h2><p>mailchimp는 한마디로 메일링 리스트 관리 + 이메일 발송 + 데이터 분석의 역할을 하고 있다. 데이터 분석까지는 많이 써봐야 진가를 알 수 있을것 같으니 생략하고 메일링 리스트와 + 이메일 발송 까지 다뤄보기로 함.</p>
+<p>static web site(github page 같은)를 사용하고 있는 경우, 메일링 리스트를 구현하려고 하면 DB까지 연결해야 하나라는 고민이 있을 수 있는데, 그럴때 mailchimp를 사용하면 좋겠다. subscibe form도 제공해줘서 static web에 바로 붙일 수 있다.</p>
+<p><a href="http://nberserk.github.io">내홈페이지</a> footer에도 붙여 놨으니 참고.</p>
+
+      
+    </div>
+
+    
+      
+
+    
+
+    <footer class="article-footer">
+      <a data-url="http://nberserk.github.io/2017/10/30/mailchimp/" data-id="ckqe4m42i001hrcqyr2fxmtbf" class="article-share-link">
+        <i class="fa fa-share"></i> Share
+      </a>
+      
+        <a href="http://nberserk.github.io/2017/10/30/mailchimp/#disqus_thread" class="article-comment-link">
+          <i class="fa fa-comment"></i> Comments
+        </a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/mailchimp/" rel="tag">mailchimp</a></li></ul>
+
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-oauth2" class="article article-type-post" itemscope itemprop="blogPost">
+
+  <header class="article-header">
+    
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/10/09/oauth2/">oauth2</a>
+    </h1>
+  
+
+
+  </header>
+
+  <div class="article-meta">
+    <div class="article-datetime">
+  <a href="/2017/10/09/oauth2/" class="article-date"><time datetime="2017-10-09T15:00:00.000Z" itemprop="datePublished">2017-10-10</time></a>
+</div>
+
+    
+    
+
+  </div>
+  <div class="article-inner">
+
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>요즘 대부분의 사이트의 회원가입/로그인 화면을 보면 Facebook/Google/Twitter를 통해서 가입 및 로그인을 할 수 있게 만들어 놨다. 이것이 흥한 이유는 매번 같은 정보를 기입해야 하는 유저들이 버튼 한번만 클릭하면 되는 편리함 + 중/소 사이트들의 security에 불안을 느끼기 때문이기도 함.</p>
+<p>이러한 것을 가능하게 해주는 것이 OAuth란 스펙인데 현재는 2.0이 대부분임.</p>
+<h2 id="OAuth2"><a href="#OAuth2" class="headerlink" title="OAuth2"></a>OAuth2</h2><p>OAuth가 없던 시절에 이런것을 하려고 하면, 우선 나의 앱(client)이 페이스북 계정과 연동하게 하려면 아이디/패스워드를 클라이언트에게 노출 될 수밖에 없고, 이렇게 되면 내가 페북의 비번관리를 잘못하면 비번이 노출되게 되고 그러면 페이스북의 비번을 뚫리게 되므로 보안적으로 허술해짐.</p>
+<p>그래서 고안한 것이 OAuth인데, 비번 대신에 access_token 을 발급해주고, 필요한 정보가 있으면 access_token으로 쿼리를 하면 답을 주겠다는 것임. 아래 flow 참고.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">+--------+                               +---------------+</span><br><span class="line">|        |--(A)- Authorization Request -&gt;|   Resource    |</span><br><span class="line">|        |                               |     Owner     |</span><br><span class="line">|        |&lt;-(B)-- Authorization Grant ---|               |</span><br><span class="line">|        |                               +---------------+</span><br><span class="line">|        |</span><br><span class="line">|        |                               +---------------+</span><br><span class="line">|        |--(C)-- Authorization Grant --&gt;| Authorization |</span><br><span class="line">| Client |                               |     Server    |</span><br><span class="line">|        |&lt;-(D)----- Access Token -------|               |</span><br><span class="line">|        |                               +---------------+</span><br><span class="line">|        |</span><br><span class="line">|        |                               +---------------+</span><br><span class="line">|        |--(E)----- Access Token ------&gt;|    Resource   |</span><br><span class="line">|        |                               |     Server    |</span><br><span class="line">|        |&lt;-(F)--- Protected Resource ---|               |</span><br><span class="line">+--------+                               +---------------+</span><br></pre></td></tr></table></figure>
+<p>facebook/google/twitter로서는 당연히 자신의 계정이 많으 퍼질수록 좋음. 그래서 3rd party가(sign up을 쉽게 하고자 하는) 자신의 앱을 등록할 수 있게 해줌. 이때 <code>app id</code> 와 <code>app secret</code> 을 발급하주고, 이것을 이용해서 oauth의 endpoint로 로그인을 요청하면 로그인 결과를 redirect_uri로 리턴해줌. 리턴시 <code>access token</code>을 보내주는 flow!</p>
+<p>fb/google/twitter로서도 app_id로 3rd party들을 컨트롤할 수 있으니 이보다 계정 오너로서는 이보다 더 좋을순 없음. 점점 모든 데이터는 빅 플레이어들에게 유리하게 가는 구조.</p>
+<h2 id="Example-Google-OAuth"><a href="#Example-Google-OAuth" class="headerlink" title="Example : Google OAuth"></a>Example : Google OAuth</h2><p>이해를 돕기 위해 구글 web Oauth를 구현해 보자. <a href="https://developers.google.com/identity/protocols/OAuth2UserAgent" target="_blank" rel="noopener">google oauth reference</a> 를 띄어놓고..</p>
+<ol>
+<li>Google cloud platform console에 로그인</li>
+<li>oauth를 사용하기 위한 project 생성</li>
+<li>생성후, 해당 프로젝트의 메뉴에서 API&amp;services&gt;credential을 선택후, credential 생성.<ol>
+<li>web application 선택</li>
+<li>origin 과 redirect uri 등록</li>
+</ol>
+</li>
+<li>위의 과정에서 <code>client_id</code>와 <code>client_secret</code>이 발급이 되었다. 이제 이것을 이용해서 로그인을 할차례.</li>
+<li>아래의 url로 구글 인증을 요청하고, 아뒤/비번을 맞게 입력했다면 redirect_uri로 token을 uri에 붙여서 보낸다. 이 토큰을 이용해서, 이메일/이름/프로파일 아이콘 등을 요청할 수 있다.<blockquote>
+<p><a href="https://accounts.google.com/o/oauth2/v2/auth?client_id=`client_id`&amp;response_type=token&amp;scope=https://www.googleapis.com/auth/userinfo.email" target="_blank" rel="noopener">https://accounts.google.com/o/oauth2/v2/auth?client_id=`client_id`&amp;response_type=token&amp;scope=https://www.googleapis.com/auth/userinfo.email</a> <a href="https://www.googleapis.com/auth/userinfo.profile&amp;redirect_uri=`your_redirect_uri`" target="_blank" rel="noopener">https://www.googleapis.com/auth/userinfo.profile&amp;redirect_uri=`your_redirect_uri`</a></p>
+</blockquote>
+</li>
+</ol>
+<h2 id="References"><a href="#References" class="headerlink" title="References"></a>References</h2><ul>
+<li><a href="https://oauth.net/2/" target="_blank" rel="noopener">https://oauth.net/2/</a></li>
+<li><a href="https://www.oauth.com/oauth2-servers/background/" target="_blank" rel="noopener">https://www.oauth.com/oauth2-servers/background/</a></li>
+</ul>
+
+      
+    </div>
+
+    
+      
+
+    
+
+    <footer class="article-footer">
+      <a data-url="http://nberserk.github.io/2017/10/09/oauth2/" data-id="ckqe4m42h001grcqyadtbxz2a" class="article-share-link">
+        <i class="fa fa-share"></i> Share
+      </a>
+      
+        <a href="http://nberserk.github.io/2017/10/09/oauth2/#disqus_thread" class="article-comment-link">
+          <i class="fa fa-comment"></i> Comments
+        </a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/oauth/" rel="tag">oauth</a></li></ul>
+
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+
+
+  <div id="page-nav">
+    <nav><ul class="pagination"><li><a class="page-prev" rel="prev" href="/page/4/"><i class="fa fa-chevron-left"></i> Prev</a></li><li><a class="page-number" href="/">1</a></li><li class="disabled"><span class="page-space">&hellip;</span></li><li><a class="page-number" href="/page/3/">3</a></li><li><a class="page-number" href="/page/4/">4</a></li><li class="active"><span class="page-number">5</span></li><li><a class="page-number" href="/page/6/">6</a></li><li><a class="page-number" href="/page/7/">7</a></li><li class="disabled"><span class="page-space">&hellip;</span></li><li><a class="page-number" href="/page/10/">10</a></li><li><a class="page-next" rel="next" href="/page/6/">Next <i class="fa fa-chevron-right"></i></a></li></ul></nav>
+  </div>
+
+
+
+        </div>
+        <div class="col-sm-3 col-sm-offset-1 blog-sidebar">
+          
+  <div class="sidebar-module sidebar-module-inset">
+  <h4>About</h4>
+  <p>Etiam porta <em>sem malesuada magna</em> mollis euismod. Cras mattis consectetur purus sit amet fermentum. Aenean lacinia bibendum nulla sed consectetur.</p>
+
+</div>
+
+
+  
+  <div class="sidebar-module">
+    <h4>Categories</h4>
+    <ul class="sidebar-module-list"><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/categories/algorithm/">algorithm</a><span class="sidebar-module-list-count">5</span></li></ul>
+  </div>
+
+
+
+  
+  <div class="sidebar-module">
+    <h4>Tags</h4>
+    <ul class="sidebar-module-list" itemprop="keywords"><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/CVA/" rel="tag">CVA</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/algorithm/" rel="tag">algorithm</a><span class="sidebar-module-list-count">15</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/angular/" rel="tag">angular</a><span class="sidebar-module-list-count">6</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/aws/" rel="tag">aws</a><span class="sidebar-module-list-count">5</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/c/" rel="tag">c++</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/checkstyle/" rel="tag">checkstyle</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/cloud-architecture/" rel="tag">cloud architecture</a><span class="sidebar-module-list-count">2</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/coverage/" rel="tag">coverage</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/design/" rel="tag">design</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/django/" rel="tag">django</a><span class="sidebar-module-list-count">2</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/docker/" rel="tag">docker</a><span class="sidebar-module-list-count">5</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/dp/" rel="tag">dp</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/dynamo/" rel="tag">dynamo</a><span class="sidebar-module-list-count">2</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/elasticsearch/" rel="tag">elasticsearch</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/emacs/" rel="tag">emacs</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/emr/" rel="tag">emr</a><span class="sidebar-module-list-count">2</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/fzf/" rel="tag">fzf</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/general/" rel="tag">general</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/gerrit/" rel="tag">gerrit</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/git/" rel="tag">git</a><span class="sidebar-module-list-count">3</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/github/" rel="tag">github</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/google/" rel="tag">google</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/graph/" rel="tag">graph</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/hadoop/" rel="tag">hadoop</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/hexo/" rel="tag">hexo</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/invoke/" rel="tag">invoke</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/jacoco/" rel="tag">jacoco</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/java/" rel="tag">java</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/jekyll/" rel="tag">jekyll</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/jenkins/" rel="tag">jenkins</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/kibana/" rel="tag">kibana</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/mailchimp/" rel="tag">mailchimp</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/maven/" rel="tag">maven</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/mgmt/" rel="tag">mgmt</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/mockito/" rel="tag">mockito</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/mybatis/" rel="tag">mybatis</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/mysql/" rel="tag">mysql</a><span class="sidebar-module-list-count">2</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/nosql/" rel="tag">nosql</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/oauth/" rel="tag">oauth</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/proxy/" rel="tag">proxy</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/rake/" rel="tag">rake</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/regex/" rel="tag">regex</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/rest/" rel="tag">rest</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/ripgrep/" rel="tag">ripgrep</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/ruby/" rel="tag">ruby</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/spark/" rel="tag">spark</a><span class="sidebar-module-list-count">7</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/spring-in-action/" rel="tag">spring in action</a><span class="sidebar-module-list-count">4</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/spring-in-actions/" rel="tag">spring in actions</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/sql/" rel="tag">sql</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/ssh/" rel="tag">ssh</a><span class="sidebar-module-list-count">2</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/swagger/" rel="tag">swagger</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/system-design/" rel="tag">system design</a><span class="sidebar-module-list-count">2</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/template/" rel="tag">template</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/tmux/" rel="tag">tmux</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/tree/" rel="tag">tree</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/vscode/" rel="tag">vscode</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/wordgrep/" rel="tag">wordgrep</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/zeppelin/" rel="tag">zeppelin</a><span class="sidebar-module-list-count">1</span></li></ul>
+  </div>
+
+
+
+  
+  <div class="sidebar-module">
+    <h4>Tag Cloud</h4>
+    <p class="tagcloud">
+      <a href="/tags/CVA/" style="font-size: 10px;">CVA</a> <a href="/tags/algorithm/" style="font-size: 20px;">algorithm</a> <a href="/tags/angular/" style="font-size: 17.14px;">angular</a> <a href="/tags/aws/" style="font-size: 15.71px;">aws</a> <a href="/tags/c/" style="font-size: 10px;">c++</a> <a href="/tags/checkstyle/" style="font-size: 10px;">checkstyle</a> <a href="/tags/cloud-architecture/" style="font-size: 11.43px;">cloud architecture</a> <a href="/tags/coverage/" style="font-size: 10px;">coverage</a> <a href="/tags/design/" style="font-size: 10px;">design</a> <a href="/tags/django/" style="font-size: 11.43px;">django</a> <a href="/tags/docker/" style="font-size: 15.71px;">docker</a> <a href="/tags/dp/" style="font-size: 10px;">dp</a> <a href="/tags/dynamo/" style="font-size: 11.43px;">dynamo</a> <a href="/tags/elasticsearch/" style="font-size: 10px;">elasticsearch</a> <a href="/tags/emacs/" style="font-size: 10px;">emacs</a> <a href="/tags/emr/" style="font-size: 11.43px;">emr</a> <a href="/tags/fzf/" style="font-size: 10px;">fzf</a> <a href="/tags/general/" style="font-size: 10px;">general</a> <a href="/tags/gerrit/" style="font-size: 10px;">gerrit</a> <a href="/tags/git/" style="font-size: 12.86px;">git</a> <a href="/tags/github/" style="font-size: 10px;">github</a> <a href="/tags/google/" style="font-size: 10px;">google</a> <a href="/tags/graph/" style="font-size: 10px;">graph</a> <a href="/tags/hadoop/" style="font-size: 10px;">hadoop</a> <a href="/tags/hexo/" style="font-size: 10px;">hexo</a> <a href="/tags/invoke/" style="font-size: 10px;">invoke</a> <a href="/tags/jacoco/" style="font-size: 10px;">jacoco</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/jekyll/" style="font-size: 10px;">jekyll</a> <a href="/tags/jenkins/" style="font-size: 10px;">jenkins</a> <a href="/tags/kibana/" style="font-size: 10px;">kibana</a> <a href="/tags/mailchimp/" style="font-size: 10px;">mailchimp</a> <a href="/tags/maven/" style="font-size: 10px;">maven</a> <a href="/tags/mgmt/" style="font-size: 10px;">mgmt</a> <a href="/tags/mockito/" style="font-size: 10px;">mockito</a> <a href="/tags/mybatis/" style="font-size: 10px;">mybatis</a> <a href="/tags/mysql/" style="font-size: 11.43px;">mysql</a> <a href="/tags/nosql/" style="font-size: 10px;">nosql</a> <a href="/tags/oauth/" style="font-size: 10px;">oauth</a> <a href="/tags/proxy/" style="font-size: 10px;">proxy</a> <a href="/tags/rake/" style="font-size: 10px;">rake</a> <a href="/tags/regex/" style="font-size: 10px;">regex</a> <a href="/tags/rest/" style="font-size: 10px;">rest</a> <a href="/tags/ripgrep/" style="font-size: 10px;">ripgrep</a> <a href="/tags/ruby/" style="font-size: 10px;">ruby</a> <a href="/tags/spark/" style="font-size: 18.57px;">spark</a> <a href="/tags/spring-in-action/" style="font-size: 14.29px;">spring in action</a> <a href="/tags/spring-in-actions/" style="font-size: 10px;">spring in actions</a> <a href="/tags/sql/" style="font-size: 10px;">sql</a> <a href="/tags/ssh/" style="font-size: 11.43px;">ssh</a> <a href="/tags/swagger/" style="font-size: 10px;">swagger</a> <a href="/tags/system-design/" style="font-size: 11.43px;">system design</a> <a href="/tags/template/" style="font-size: 10px;">template</a> <a href="/tags/tmux/" style="font-size: 10px;">tmux</a> <a href="/tags/tree/" style="font-size: 10px;">tree</a> <a href="/tags/vscode/" style="font-size: 10px;">vscode</a> <a href="/tags/wordgrep/" style="font-size: 10px;">wordgrep</a> <a href="/tags/zeppelin/" style="font-size: 10px;">zeppelin</a>
+    </p>
+  </div>
+
+
+  
+  <div class="sidebar-module">
+    <h4>Archives</h4>
+    <ul class="sidebar-module-list"><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2021/06/">6월 2021</a><span class="sidebar-module-list-count">3</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2020/09/">9월 2020</a><span class="sidebar-module-list-count">2</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2020/04/">4월 2020</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2019/11/">11월 2019</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2019/08/">8월 2019</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2019/05/">5월 2019</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2019/04/">4월 2019</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2019/02/">2월 2019</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2019/01/">1월 2019</a><span class="sidebar-module-list-count">4</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2018/12/">12월 2018</a><span class="sidebar-module-list-count">2</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2018/11/">11월 2018</a><span class="sidebar-module-list-count">2</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2018/10/">10월 2018</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2018/08/">8월 2018</a><span class="sidebar-module-list-count">4</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2018/07/">7월 2018</a><span class="sidebar-module-list-count">5</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2018/06/">6월 2018</a><span class="sidebar-module-list-count">5</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2018/05/">5월 2018</a><span class="sidebar-module-list-count">4</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2018/04/">4월 2018</a><span class="sidebar-module-list-count">4</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2018/03/">3월 2018</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2018/02/">2월 2018</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2018/01/">1월 2018</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2017/12/">12월 2017</a><span class="sidebar-module-list-count">2</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2017/11/">11월 2017</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2017/10/">10월 2017</a><span class="sidebar-module-list-count">2</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2017/09/">9월 2017</a><span class="sidebar-module-list-count">2</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2017/07/">7월 2017</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2017/03/">3월 2017</a><span class="sidebar-module-list-count">2</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2017/02/">2월 2017</a><span class="sidebar-module-list-count">2</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2016/12/">12월 2016</a><span class="sidebar-module-list-count">3</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2016/11/">11월 2016</a><span class="sidebar-module-list-count">12</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2016/07/">7월 2016</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2016/06/">6월 2016</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2016/04/">4월 2016</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2016/03/">3월 2016</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2016/02/">2월 2016</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2016/01/">1월 2016</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2015/12/">12월 2015</a><span class="sidebar-module-list-count">2</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2015/11/">11월 2015</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2015/10/">10월 2015</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2015/08/">8월 2015</a><span class="sidebar-module-list-count">2</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2015/07/">7월 2015</a><span class="sidebar-module-list-count">4</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2015/06/">6월 2015</a><span class="sidebar-module-list-count">5</span></li></ul>
+  </div>
+
+
+
+  
+  <div class="sidebar-module">
+    <h4>Recents</h4>
+    <ul class="sidebar-module-list">
+      
+        <li>
+          <a href="/2021/06/13/top-K-problem/">Top K problem</a>
+        </li>
+      
+        <li>
+          <a href="/2021/06/12/consistent-hashing/">Design distributed Cache</a>
+        </li>
+      
+        <li>
+          <a href="/2021/06/03/distributed-message-queue/">distribute message queue</a>
+        </li>
+      
+        <li>
+          <a href="/2020/09/06/design-patterns/">design patterns</a>
+        </li>
+      
+        <li>
+          <a href="/2020/08/31/wordgrep-pp/">WordGrep Privacy Policy</a>
+        </li>
+      
+    </ul>
+  </div>
+
+
+
+        </div>
+    </div>
+  </div>
+  <footer class="blog-footer">
+  <div class="container">
+    <div id="footer-info" class="inner">
+      &copy; 2021 @nberserk<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+  
+<script>
+  var disqus_shortname = 'nberserk';
+  
+  (function(){
+    var dsq = document.createElement('script');
+    dsq.type = 'text/javascript';
+    dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/count.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js" integrity="sha384-8gBf6Y4YYq7Jx97PIqmTwLPin4hxIzQw5aDmUg/DDhul9fFpbbLcLh3nTIIDJKhx" crossorigin="anonymous"></script>
+
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+</body>
+</html>

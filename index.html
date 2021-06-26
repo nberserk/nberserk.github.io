@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Inertia</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="site.desc">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Inertia">
+<meta property="og:url" content="http://nberserk.github.io/index.html">
+<meta property="og:site_name" content="Inertia">
+<meta property="og:description" content="site.desc">
+<meta property="og:locale" content="ko_KR">
+<meta property="article:author" content="@nberserk">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="Inertia" type="application/atom+xml">
+  
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css" integrity="sha384-XdYbMnZ/QjLh6iI4ogqCTaIjrFk87ip+ekIjefZch0Y+PvJ8CDYtEs1ipDmPorQ+" crossorigin="anonymous">
+
+  
+<link rel="stylesheet" href="/css/styles.css">
+
+  
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body>
+  <nav class="navbar navbar-inverse">
+  <div class="container">
+    <!-- Brand and toggle get grouped for better mobile display -->
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#main-menu-navbar" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      
+    </div>
+
+    <!-- Collect the nav links, forms, and other content for toggling -->
+    <div class="collapse navbar-collapse" id="main-menu-navbar">
+      <ul class="nav navbar-nav">
+        
+          <li><a class="active"
+                 href="/index.html">Home</a></li>
+        
+          <li><a class=""
+                 href="/archives/">Archives</a></li>
+        
+      </ul>
+
+      <!--
+      <ul class="nav navbar-nav navbar-right">
+        
+          <li><a href="/atom.xml" title="RSS Feed"><i class="fa fa-rss"></i></a></li>
+        
+      </ul>
+      -->
+    </div><!-- /.navbar-collapse -->
+  </div><!-- /.container-fluid -->
+</nav>
+
+  <div class="container">
+    <div class="blog-header">
+  <h1 class="blog-title">Inertia</h1>
+  
+</div>
+
+    <div class="row">
+        <div class="col-sm-8 blog-main">
+          
+  
+    <article id="post-top-K-problem" class="article article-type-post" itemscope itemprop="blogPost">
+
+  <header class="article-header">
+    
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2021/06/13/top-K-problem/">Top K problem</a>
+    </h1>
+  
+
+
+  </header>
+
+  <div class="article-meta">
+    <div class="article-datetime">
+  <a href="/2021/06/13/top-K-problem/" class="article-date"><time datetime="2021-06-13T15:00:00.000Z" itemprop="datePublished">2021-06-14</time></a>
+</div>
+
+    
+    
+
+  </div>
+  <div class="article-inner">
+
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="Requirements"><a href="#Requirements" class="headerlink" title="Requirements"></a>Requirements</h2><p>functional</p>
+<ul>
+<li>topK(k, startTime, endTime)</li>
+<li>scalable</li>
+<li>available</li>
+<li>highly performant: few ten milliseconds to return top 100 list</li>
+<li>accurate</li>
+</ul>
+<h2 id="single-host-approach"><a href="#single-host-approach" class="headerlink" title="single host approach"></a>single host approach</h2><p><img src="https://user-images.githubusercontent.com/900639/122692932-788e2280-d1ec-11eb-9cfb-0249ec71d401.png" alt="image"></p>
+<ul>
+<li>build hashTable&lt;Key, Count&gt; <ul>
+<li>sort the whole list: O(nLog(n))</li>
+<li>use heap: O(nLog(k))</li>
+</ul>
+</li>
+</ul>
+<p>but it’s not scalable.</p>
+<h2 id="Hash-table-multiple-hosts"><a href="#Hash-table-multiple-hosts" class="headerlink" title="Hash table, multiple hosts"></a>Hash table, multiple hosts</h2><p><img src="https://user-images.githubusercontent.com/900639/122692782-d5d5a400-d1eb-11eb-9bf4-00d09955517a.png" alt="image"></p>
+<p>you can scale previous approach by using data paritioner. scalability and througput has been addressed.</p>
+<p>But streaming data is not bounded. It has infinite data. what if we need to calculate top K for a day or a week?</p>
+<h2 id="count-min-sketch-multiple-hosts"><a href="#count-min-sketch-multiple-hosts" class="headerlink" title="count-min sketch, multiple hosts"></a>count-min sketch, multiple hosts</h2><p>There is well-known data structure called count-min sketch, kind of approximation algorithm, which guarantees fixed memory usage. basically it tradedoff between accuracy and memory. </p>
+<p><img src="https://user-images.githubusercontent.com/900639/122708501-2c090e00-d211-11eb-93de-435e82166873.png" alt="image"></p>
+<p>count-min sketch uses 2 dimensional array, each row is different hash function, column is count. whenever new event comes in, calculate hash value for each row, and increment the value of the cell by 1. This means that it could have collision, that’s why we take the smallest value as a result.</p>
+<p>But this doesn’t give us accurate top K lists. if constraints don’t allow inaccuracy, then we need a different approach.</p>
+<h2 id="high-level-design"><a href="#high-level-design" class="headerlink" title="high level design"></a>high level design</h2><p><img src="https://user-images.githubusercontent.com/900639/122709631-80ad8880-d213-11eb-8601-41b433e54634.png" alt="image"></p>
+<h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2><ul>
+<li><a href="https://www.youtube.com/watch?v=kx-XDoPjoHw" target="_blank" rel="noopener">https://www.youtube.com/watch?v=kx-XDoPjoHw</a></li>
+<li><a href="http://nathanmarz.com/blog/how-to-beat-the-cap-theorem.html" target="_blank" rel="noopener">http://nathanmarz.com/blog/how-to-beat-the-cap-theorem.html</a></li>
+</ul>
+
+      
+    </div>
+
+    
+      
+
+    
+
+    <footer class="article-footer">
+      <a data-url="http://nberserk.github.io/2021/06/13/top-K-problem/" data-id="ckqe4m43k002urcqyi16wru96" class="article-share-link">
+        <i class="fa fa-share"></i> Share
+      </a>
+      
+        <a href="http://nberserk.github.io/2021/06/13/top-K-problem/#disqus_thread" class="article-comment-link">
+          <i class="fa fa-comment"></i> Comments
+        </a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/system-design/" rel="tag">system design</a></li></ul>
+
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-consistent-hashing" class="article article-type-post" itemscope itemprop="blogPost">
+
+  <header class="article-header">
+    
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2021/06/12/consistent-hashing/">Design distributed Cache</a>
+    </h1>
+  
+
+
+  </header>
+
+  <div class="article-meta">
+    <div class="article-datetime">
+  <a href="/2021/06/12/consistent-hashing/" class="article-date"><time datetime="2021-06-12T15:00:00.000Z" itemprop="datePublished">2021-06-13</time></a>
+</div>
+
+    
+    
+
+  </div>
+  <div class="article-inner">
+
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="Requirements"><a href="#Requirements" class="headerlink" title="Requirements"></a>Requirements</h2><p>Functional:</p>
+<ul>
+<li>put(key, value)</li>
+<li>get(key)</li>
+</ul>
+<p>Non-Functional:</p>
+<ul>
+<li>Scalable</li>
+<li>highly available(survives hardware/network failures)</li>
+<li>highly performant(fast put/get)</li>
+</ul>
+<h2 id="LRU-Cache"><a href="#LRU-Cache" class="headerlink" title="LRU Cache"></a>LRU Cache</h2><p>The basic data structure for cache would be <strong>hash table</strong> since it provides O(1) time complexity for put/get operation. So far so good. </p>
+<p>One machine has finite memory capacity so we can’t put keys endlessely. If the cache is full, we need to delete existing data so that we can add new one. Then which key should be evicted(deleted)? This is called <a href="https://en.wikipedia.org/wiki/Cache_replacement_policies" target="_blank" rel="noopener">cache eviction(replacement) policy</a>. The most popular one is Least recently Used(LRU).</p>
+<p>LRU discards the least recently used items first. So the algorithm needs to keep track of access time of the items. </p>
+<p>Order can be easily expressed by linked list and cache is basically hash table. Then we can combine these two into one data structure, called <strong>Linked Hash Table.</strong>. basic idea is whenever the key is accessed, we add the item into head of the list. Then the tail of the list will be always the one last accessed, which is the target item to be removed when capacity is full.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Node</span></span>&#123;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> String key;</span><br><span class="line">  <span class="keyword">private</span> String value;</span><br><span class="line">  <span class="keyword">private</span> Node prev, next;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="title">Node</span><span class="params">(String key, String value)</span></span>&#123;</span><br><span class="line">    <span class="keyword">this</span>.key=key;</span><br><span class="line">    <span class="keyword">this</span>.value=value;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">LRUCache</span></span>&#123;</span><br><span class="line">  Map&lt;String, Node&gt; map;</span><br><span class="line">  <span class="keyword">int</span> capacity;</span><br><span class="line">  NOde head = <span class="keyword">null</span>;</span><br><span class="line">  Node tail = <span class="keyword">null</span>;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">private</span> <span class="title">deleteFromList</span><span class="params">(Node node)</span></span>&#123;</span><br><span class="line"></span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">private</span> <span class="title">setListHead</span><span class="params">(Node node)</span></span>&#123;</span><br><span class="line"></span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="title">put</span><span class="params">(String key, String value)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span>(map.containsKey(key))&#123;</span><br><span class="line">      map.get(key).setValue(value);</span><br><span class="line">      deleteFromList(node);</span><br><span class="line">      setListHead(node);</span><br><span class="line">    &#125; <span class="keyword">else</span>&#123;</span><br><span class="line">      <span class="keyword">if</span>(map.size()&gt;=capacity)&#123;</span><br><span class="line">        map.remove(tail.getKey());</span><br><span class="line">        deleteFromList(tail);</span><br><span class="line">      &#125;</span><br><span class="line">      Node node = <span class="keyword">new</span> Node(key,value);</span><br><span class="line">      map.put(key, node);</span><br><span class="line">      setListHead(node);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">public</span> String <span class="title">get</span><span class="params">(String key)</span></span>&#123;</span><br><span class="line">    <span class="keyword">if</span>(!map.containsKey(key))&#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    Node node = map.get(key);</span><br><span class="line">    deleteFromList(node);</span><br><span class="line">    setListHead(node);</span><br><span class="line">    <span class="keyword">return</span> node.getValue();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="2-possible-approaches"><a href="#2-possible-approaches" class="headerlink" title="2 possible approaches"></a>2 possible approaches</h2><h3 id="dedicated-cache-cluster"><a href="#dedicated-cache-cluster" class="headerlink" title="dedicated cache cluster"></a>dedicated cache cluster</h3><ul>
+<li>isolation of resources between service and cache</li>
+<li>can be used by multiple services</li>
+<li>flexibility in choosing hardware<h3 id="co-located-cache"><a href="#co-located-cache" class="headerlink" title="co-located cache"></a>co-located cache</h3>cache service is co-located with the service host.</li>
+<li>No extra hardware and operation cost</li>
+<li>scales together with the service</li>
+</ul>
+<h2 id="choosing-a-cache-host"><a href="#choosing-a-cache-host" class="headerlink" title="choosing a cache host"></a>choosing a cache host</h2><p>Definitely one cache host can’t server all the items. They need to be split across multiple hosts by hash of key of the item. How keys can be distributed? </p>
+<h3 id="MOD"><a href="#MOD" class="headerlink" title="MOD"></a>MOD</h3><p>Cache host number = hash_function(key) MOD #hosts</p>
+<p>mod operator would be the most easy one to implement but it has obvious weakness. entire cache need to be rewritten whenever a new host is added or deleted. Generally this kind of overhead is not acceptable in production environment.</p>
+<h3 id="Consistent-hashing"><a href="#Consistent-hashing" class="headerlink" title="Consistent hashing"></a>Consistent hashing</h3><p>consistent hashing is basically placing host on a circle. 12 oclock will be value 0 or 2^32. the point will be mapped to the point on the circle boundary based on the hash value. for example 2^32/4 will be mapped to 3 o’clock. we will place cache host along the circle with even distance. the keys between the two hosts belong to the first clockwise host. </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">before:</span><br><span class="line">H1 --- H2 --- H3 --- H1</span><br><span class="line"></span><br><span class="line">after:</span><br><span class="line">H1 --- H2 --- H2.5 --- H3 --- H1</span><br></pre></td></tr></table></figure>
+<p>Let’s say we added H2.5 between H2 and H3. then the affected hosts are H2 and only. very limited blast radius compared to the MOD approach.</p>
+<h2 id="Cache-client"><a href="#Cache-client" class="headerlink" title="Cache client"></a>Cache client</h2><p>cache client knows about all cache servers. all cache clients should have the same list of servers. It stores list of servers in sorted order. just like TreeMap in java. binary search is used to identify server, which is O(logn). It uses TCP or UDP protocol to talke to servers. If cache server is unavailable, client proceeds as if it was a cache miss. </p>
+<h3 id="maintaining-a-list-of-cache-servers"><a href="#maintaining-a-list-of-cache-servers" class="headerlink" title="maintaining a list of cache servers"></a>maintaining a list of cache servers</h3><ul>
+<li>use configuration file in local host</li>
+<li>use external file like S3</li>
+<li>use configuration service like ZooKeeper<ul>
+<li>config service will check heartbeat with all the cache hosts. if it fails it will be deleted from the cache list</li>
+</ul>
+</li>
+</ul>
+<h2 id="high-availability"><a href="#high-availability" class="headerlink" title="high availability"></a>high availability</h2><p>hot shard problem can be solved by replication.</p>
+<p>there are two categories of data replication protocols.</p>
+<ul>
+<li>a set of probablistic protocol -&gt; eventual consistency<ul>
+<li>gossip</li>
+<li>epdemic broadcast</li>
+<li>trees</li>
+<li>bimodal multicast</li>
+</ul>
+</li>
+<li>consensus protocol -&gt; strong consistency<ul>
+<li>2 or 3 phase commit</li>
+<li>paxos</li>
+<li>raft</li>
+<li>chain replication</li>
+</ul>
+</li>
+</ul>
+<p>master-slave replication</p>
+<h2 id="what-else"><a href="#what-else" class="headerlink" title="what else?"></a>what else?</h2><ul>
+<li>consistency. The consistency issues can happen. consistency can be achieved by performing synchronous replication. but this will introduce additional latency and overall complexity of the system. so it’s heavily depends on the service requireemnts.</li>
+<li><p>data expiration. The data can be expired after some time later depends on business requiremetns. If that’s the case we can schedule a batch job to remove expired keys. Or passively delete expired cache on a regular basis.</p>
+</li>
+<li><p>Local cache can be used on the clinet library side. LRU cache or Guava cache can be used.</p>
+</li>
+<li>Security.<ul>
+<li>firewall</li>
+<li>encrypt the data</li>
+</ul>
+</li>
+<li>monitoring and loggin<ul>
+<li>number of errors, latency, cache hit/miss, cpu, memory</li>
+</ul>
+</li>
+<li>cache client<ul>
+<li>maintain a list of cache servers</li>
+<li>pick a shard</li>
+<li>remote call</li>
+<li>delegate many responsibilities to proxy, ref twemproxy project<br>or make cache servers responsible for picking a shard</li>
+</ul>
+</li>
+<li>consistent hasing has 2 flaws. domino effect and not split the circle evenly-&gt; add server on the circle multiple times</li>
+</ul>
+<h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2><ul>
+<li><a href="https://youtu.be/iuqZvajTOyA" target="_blank" rel="noopener">https://youtu.be/iuqZvajTOyA</a></li>
+<li>TCP vs UDP, <a href="https://www.geeksforgeeks.org/differences-between-tcp-and-udp/" target="_blank" rel="noopener">https://www.geeksforgeeks.org/differences-between-tcp-and-udp/</a></li>
+</ul>
+
+      
+    </div>
+
+    
+      
+
+    
+
+    <footer class="article-footer">
+      <a data-url="http://nberserk.github.io/2021/06/12/consistent-hashing/" data-id="ckqe4m43j002trcqyf1tzu0qc" class="article-share-link">
+        <i class="fa fa-share"></i> Share
+      </a>
+      
+        <a href="http://nberserk.github.io/2021/06/12/consistent-hashing/#disqus_thread" class="article-comment-link">
+          <i class="fa fa-comment"></i> Comments
+        </a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/system-design/" rel="tag">system design</a></li></ul>
+
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-distributed-message-queue" class="article article-type-post" itemscope itemprop="blogPost">
+
+  <header class="article-header">
+    
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2021/06/03/distributed-message-queue/">distribute message queue</a>
+    </h1>
+  
+
+
+  </header>
+
+  <div class="article-meta">
+    <div class="article-datetime">
+  <a href="/2021/06/03/distributed-message-queue/" class="article-date"><time datetime="2021-06-03T15:00:00.000Z" itemprop="datePublished">2021-06-04</time></a>
+</div>
+
+    
+    
+
+  </div>
+  <div class="article-inner">
+
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="DB-selection"><a href="#DB-selection" class="headerlink" title="DB selection"></a>DB selection</h2><p><a href="https://www.youtube.com/watch?v=cODCpXtPHbQ" target="_blank" rel="noopener">https://www.youtube.com/watch?v=cODCpXtPHbQ</a></p>
+<ul>
+<li>Structured data<ul>
+<li>yes<ul>
+<li>Need ACID<ul>
+<li>RDBMS(yes): mysql, orcle, sql server, postgres</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>no<ul>
+<li>Ever increasing data &amp;&amp; + finite queries -&gt; Columnar DB: Cassandra, HBase</li>
+<li>++ Data types &amp;&amp; ++ queries -&gt; document DB: mongoDB, Couch Base</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>interesting example: At ecommerece site, we shouldn’t sell more that the remaining quantity. it should support ACID. so we can use SQL before placing order. but once order is created, then you can use MongoDB to save the data.</p>
+
+      
+    </div>
+
+    
+      
+
+    
+
+    <footer class="article-footer">
+      <a data-url="http://nberserk.github.io/2021/06/03/distributed-message-queue/" data-id="ckqe4m43i002srcqy6ij6ozgy" class="article-share-link">
+        <i class="fa fa-share"></i> Share
+      </a>
+      
+        <a href="http://nberserk.github.io/2021/06/03/distributed-message-queue/#disqus_thread" class="article-comment-link">
+          <i class="fa fa-comment"></i> Comments
+        </a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/design/" rel="tag">design</a></li></ul>
+
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-design-patterns" class="article article-type-post" itemscope itemprop="blogPost">
+
+  <header class="article-header">
+    
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/09/06/design-patterns/">design patterns</a>
+    </h1>
+  
+
+
+  </header>
+
+  <div class="article-meta">
+    <div class="article-datetime">
+  <a href="/2020/09/06/design-patterns/" class="article-date"><time datetime="2020-09-06T15:00:00.000Z" itemprop="datePublished">2020-09-07</time></a>
+</div>
+
+    
+    
+
+  </div>
+  <div class="article-inner">
+
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>interesting topics during design pattern lectures</p>
+<h1 id="implmenetation-by-intentions"><a href="#implmenetation-by-intentions" class="headerlink" title="implmenetation by intentions"></a>implmenetation by intentions</h1><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">printReport</span> <span class="params">(String CustomerID)</span> </span>&#123; </span><br><span class="line">    <span class="keyword">if</span>(!isValid(CustomerID)) <span class="keyword">throw</span> <span class="keyword">new</span> ArgumentException(); </span><br><span class="line">    Employee[] emps = getEmployees(CustomerID);</span><br><span class="line">    <span class="keyword">if</span>(needsSorting(emps)) </span><br><span class="line">        sortEmployees(emps); </span><br><span class="line">    printHeader(CustomerID);</span><br><span class="line">    printFormattedEmployees(emps);</span><br><span class="line">    printFooter(CustomerID);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>one public method contains multiple private methods fulfilling one specifc logic at a time. it’s your logical sequences when you implement <code>printReport</code> in your head. by doing this you can achieve</p>
+<ul>
+<li>Method cohesion</li>
+<li>separation of concerns<ul>
+<li>sergeant method: calls other methods</li>
+<li>private methods: implementing code</li>
+</ul>
+</li>
+<li>clarity - clear code is better than comments</li>
+<li>easy in finding/forming certain patterns</li>
+<li>no extra work is required</li>
+</ul>
+<h1 id="Commonality-Variability-Analysis-CVA"><a href="#Commonality-Variability-Analysis-CVA" class="headerlink" title="Commonality-Variability Analysis, CVA"></a>Commonality-Variability Analysis, CVA</h1><p>Assume you start a new project solving software problem in a certain domain. you heard bunch of requirments from your clients. how would you find a entities, create an abstraction with whom, find a suitable patterns among them.</p>
+<p>at this time CVA can help you</p>
+<p>requirements</p>
+<ul>
+<li>US Tax</li>
+<li>Canadian PST, GST</li>
+<li>Validation of addresses strcuture in different locations</li>
+</ul>
+<p>from this requirments you can derive a following  potential entities and abstractions.</p>
+<p>examle of CVA:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">Country</span><br><span class="line">----</span><br><span class="line">US</span><br><span class="line">Canada</span><br><span class="line"></span><br><span class="line">Tax</span><br><span class="line">-----</span><br><span class="line">Canadian Province</span><br><span class="line">Canadian Fed</span><br><span class="line">US</span><br><span class="line"></span><br><span class="line">AddressValidation</span><br><span class="line">------</span><br><span class="line">US</span><br><span class="line">Canada</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+      
+
+    
+
+    <footer class="article-footer">
+      <a data-url="http://nberserk.github.io/2020/09/06/design-patterns/" data-id="ckqe4m43h002rrcqy7vyo0alk" class="article-share-link">
+        <i class="fa fa-share"></i> Share
+      </a>
+      
+        <a href="http://nberserk.github.io/2020/09/06/design-patterns/#disqus_thread" class="article-comment-link">
+          <i class="fa fa-comment"></i> Comments
+        </a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/CVA/" rel="tag">CVA</a></li></ul>
+
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-wordgrep-pp" class="article article-type-post" itemscope itemprop="blogPost">
+
+  <header class="article-header">
+    
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/08/31/wordgrep-pp/">WordGrep Privacy Policy</a>
+    </h1>
+  
+
+
+  </header>
+
+  <div class="article-meta">
+    <div class="article-datetime">
+  <a href="/2020/08/31/wordgrep-pp/" class="article-date"><time datetime="2020-08-31T15:00:00.000Z" itemprop="datePublished">2020-09-01</time></a>
+</div>
+
+    
+    
+
+  </div>
+  <div class="article-inner">
+
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p><strong>Privacy Policy</strong></p>
+<p>nberserk built the WordGrep app as a Free app. This SERVICE is provided by nberserk at no cost and is intended for use as is.</p>
+<p>This page is used to inform visitors regarding my policies with the collection, use, and disclosure of Personal Information if anyone decided to use my Service.</p>
+<p>If you choose to use my Service, then you agree to the collection and use of information in relation to this policy. The Personal Information that I collect is used for providing and improving the Service. I will not use or share your information with anyone except as described in this Privacy Policy.</p>
+<p>The terms used in this Privacy Policy have the same meanings as in our Terms and Conditions, which is accessible at WordGrep unless otherwise defined in this Privacy Policy.</p>
+<p><strong>Information Collection and Use</strong></p>
+<p>For a better experience, while using our Service, I may require you to provide us with certain personally identifiable information, including but not limited to name. The information that I request will be retained on your device and is not collected by me in any way.</p>
+<p>The app does use third party services that may collect information used to identify you.</p>
+<p>Link to privacy policy of third party service providers used by the app</p>
+<ul>
+<li><a href="https://www.google.com/policies/privacy/" target="_blank" rel="noopener">Google Play Services</a></li>
+<li><a href="https://firebase.google.com/policies/analytics" target="_blank" rel="noopener">Google Analytics for Firebase</a></li>
+</ul>
+<p><strong>Log Data</strong></p>
+<p>I want to inform you that whenever you use my Service, in a case of an error in the app I collect data and information (through third party products) on your phone called Log Data. This Log Data may include information such as your device Internet Protocol (“IP”) address, device name, operating system version, the configuration of the app when utilizing my Service, the time and date of your use of the Service, and other statistics.</p>
+<p><strong>Cookies</strong></p>
+<p>Cookies are files with a small amount of data that are commonly used as anonymous unique identifiers. These are sent to your browser from the websites that you visit and are stored on your device’s internal memory.</p>
+<p>This Service does not use these “cookies” explicitly. However, the app may use third party code and libraries that use “cookies” to collect information and improve their services. You have the option to either accept or refuse these cookies and know when a cookie is being sent to your device. If you choose to refuse our cookies, you may not be able to use some portions of this Service.</p>
+<p><strong>Service Providers</strong></p>
+<p>I may employ third-party companies and individuals due to the following reasons:</p>
+<ul>
+<li>To facilitate our Service;</li>
+<li>To provide the Service on our behalf;</li>
+<li>To perform Service-related services; or</li>
+<li>To assist us in analyzing how our Service is used.</li>
+</ul>
+<p>I want to inform users of this Service that these third parties have access to your Personal Information. The reason is to perform the tasks assigned to them on our behalf. However, they are obligated not to disclose or use the information for any other purpose.</p>
+<p><strong>Security</strong></p>
+<p>I value your trust in providing us your Personal Information, thus we are striving to use commercially acceptable means of protecting it. But remember that no method of transmission over the internet, or method of electronic storage is 100% secure and reliable, and I cannot guarantee its absolute security.</p>
+<p><strong>Links to Other Sites</strong></p>
+<p>This Service may contain links to other sites. If you click on a third-party link, you will be directed to that site. Note that these external sites are not operated by me. Therefore, I strongly advise you to review the Privacy Policy of these websites. I have no control over and assume no responsibility for the content, privacy policies, or practices of any third-party sites or services.</p>
+<p><strong>Children’s Privacy</strong></p>
+<p>These Services do not address anyone under the age of 13. I do not knowingly collect personally identifiable information from children under 13. In the case I discover that a child under 13 has provided me with personal information, I immediately delete this from our servers. If you are a parent or guardian and you are aware that your child has provided us with personal information, please contact me so that I will be able to do necessary actions.</p>
+<p><strong>Changes to This Privacy Policy</strong></p>
+<p>I may update our Privacy Policy from time to time. Thus, you are advised to review this page periodically for any changes. I will notify you of any changes by posting the new Privacy Policy on this page.</p>
+<p>This policy is effective as of 2020-09-02</p>
+<p><strong>Contact Us</strong></p>
+<p>If you have any questions or suggestions about my Privacy Policy, do not hesitate to contact me at <a href="mailto:wordgrep@gmail.com" target="_blank" rel="noopener">wordgrep@gmail.com</a>.</p>
+
+      
+    </div>
+
+    
+      
+
+    
+
+    <footer class="article-footer">
+      <a data-url="http://nberserk.github.io/2020/08/31/wordgrep-pp/" data-id="ckqe4m43g002qrcqy23xz5d1k" class="article-share-link">
+        <i class="fa fa-share"></i> Share
+      </a>
+      
+        <a href="http://nberserk.github.io/2020/08/31/wordgrep-pp/#disqus_thread" class="article-comment-link">
+          <i class="fa fa-comment"></i> Comments
+        </a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/wordgrep/" rel="tag">wordgrep</a></li></ul>
+
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-rake" class="article article-type-post" itemscope itemprop="blogPost">
+
+  <header class="article-header">
+    
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/04/20/rake/">rake</a>
+    </h1>
+  
+
+
+  </header>
+
+  <div class="article-meta">
+    <div class="article-datetime">
+  <a href="/2020/04/20/rake/" class="article-date"><time datetime="2020-04-20T15:00:00.000Z" itemprop="datePublished">2020-04-21</time></a>
+</div>
+
+    
+    
+
+  </div>
+  <div class="article-inner">
+
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>rake is Makefile for ruby world. I am not big fan of Ruby but I like Rake as a task execuion library.</p>
+<h1 id="task-defintion-amp-dependency"><a href="#task-defintion-amp-dependency" class="headerlink" title="task defintion &amp; dependency"></a>task defintion &amp; dependency</h1><figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">task <span class="symbol">:A</span> <span class="keyword">do</span></span><br><span class="line">    sh <span class="string">"echo A task executed"</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">task <span class="symbol">B:</span> [<span class="symbol">:A</span> ] <span class="keyword">do</span></span><br><span class="line">    sh <span class="string">"echo A task executed"</span></span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+<h1 id="find-directory-where-rake-is-invoked"><a href="#find-directory-where-rake-is-invoked" class="headerlink" title="find directory where rake is invoked."></a>find directory where rake is invoked.</h1><p>sometimes, maven or gradle build command should be executed at project root directory. but current directory is changed by Rake where the Rakefile is located. so build command would fail by that reason. in this case we can get the origial directory by using the following Ruby APIs.</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">dir = Rake.application.original_dir</span><br><span class="line">Dir.chdir(dir) <span class="keyword">do</span></span><br><span class="line">    sh <span class="string">"mvn"</span></span><br><span class="line">    sh <span class="string">"gradle"</span></span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+      
+
+    
+
+    <footer class="article-footer">
+      <a data-url="http://nberserk.github.io/2020/04/20/rake/" data-id="ckqe4m43f002prcqynzq93jil" class="article-share-link">
+        <i class="fa fa-share"></i> Share
+      </a>
+      
+        <a href="http://nberserk.github.io/2020/04/20/rake/#disqus_thread" class="article-comment-link">
+          <i class="fa fa-comment"></i> Comments
+        </a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rake/" rel="tag">rake</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ruby/" rel="tag">ruby</a></li></ul>
+
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-fzf-ripgrep" class="article article-type-post" itemscope itemprop="blogPost">
+
+  <header class="article-header">
+    
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2019/11/11/fzf-ripgrep/">fzf ripgrep</a>
+    </h1>
+  
+
+
+  </header>
+
+  <div class="article-meta">
+    <div class="article-datetime">
+  <a href="/2019/11/11/fzf-ripgrep/" class="article-date"><time datetime="2019-11-11T15:00:00.000Z" itemprop="datePublished">2019-11-12</time></a>
+</div>
+
+    
+    
+
+  </div>
+  <div class="article-inner">
+
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>two useful command line tools. highly recommen to use those.</p>
+<h1 id="fzf-fuzzy-finder"><a href="#fzf-fuzzy-finder" class="headerlink" title="fzf - fuzzy finder"></a>fzf - fuzzy finder</h1><p>see this video : <a href="https://www.youtube.com/watch?v=qgG5Jhi_Els" target="_blank" rel="noopener">https://www.youtube.com/watch?v=qgG5Jhi_Els</a></p>
+<p><a href="https://github.com/junegunn/fzf" target="_blank" rel="noopener">https://github.com/junegunn/fzf</a></p>
+<h1 id="ripgrep"><a href="#ripgrep" class="headerlink" title="ripgrep"></a>ripgrep</h1><p>whenever I need to use grep, I have to find the right syntax on the web. It’s because the syntax is not intuitive at all. but after switiching to ripgrep, no more search is required. </p>
+<p><a href="https://github.com/BurntSushi/ripgrep" target="_blank" rel="noopener">https://github.com/BurntSushi/ripgrep</a></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">rg <span class="string">'fn write\('</span></span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+      
+
+    
+
+    <footer class="article-footer">
+      <a data-url="http://nberserk.github.io/2019/11/11/fzf-ripgrep/" data-id="ckqe4m43e002orcqy8a517l32" class="article-share-link">
+        <i class="fa fa-share"></i> Share
+      </a>
+      
+        <a href="http://nberserk.github.io/2019/11/11/fzf-ripgrep/#disqus_thread" class="article-comment-link">
+          <i class="fa fa-comment"></i> Comments
+        </a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/fzf/" rel="tag">fzf</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ripgrep/" rel="tag">ripgrep</a></li></ul>
+
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-tmux" class="article article-type-post" itemscope itemprop="blogPost">
+
+  <header class="article-header">
+    
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2019/08/09/tmux/">tmux</a>
+    </h1>
+  
+
+
+  </header>
+
+  <div class="article-meta">
+    <div class="article-datetime">
+  <a href="/2019/08/09/tmux/" class="article-date"><time datetime="2019-08-09T15:00:00.000Z" itemprop="datePublished">2019-08-10</time></a>
+</div>
+
+    
+    
+
+  </div>
+  <div class="article-inner">
+
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>When you are working with remote compute, usally you use SSH. It is secure and easy. but when you are working with long running task, your ssh session will be disconnected. to prevent this kind of inproductivity, tmux comes in.</p>
+<h2 id="session"><a href="#session" class="headerlink" title="session"></a>session</h2><p>tmux has session. this session will be persistent as long as the remote computer is alive. You can completely restore your context-command histroy, current directory, running progrm.</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">tmux new -s default # new session</span><br><span class="line">tmux ls </span><br><span class="line"></span><br><span class="line">tmux attach -t &lt;session&gt;</span><br><span class="line"><span class="meta">tmux&gt;</span><span class="bash"> quit <span class="comment"># terminate session</span></span></span><br><span class="line"><span class="meta">tmux&gt;</span><span class="bash"> tmux detach <span class="comment"># detach current session. session is not terminated</span></span></span><br></pre></td></tr></table></figure>
+<h2 id="window"><a href="#window" class="headerlink" title="window"></a>window</h2><h2 id="pane"><a href="#pane" class="headerlink" title="pane"></a>pane</h2><p>window can be splitted into several panes. tmux can store/restore panes.</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">prefix + \" : split active pane horizontally</span><br><span class="line">prefix + arrow key : switch to another pane</span><br><span class="line">prefix + o : move to next pane</span><br></pre></td></tr></table></figure>
+<h2 id="shortcut"><a href="#shortcut" class="headerlink" title="shortcut"></a>shortcut</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">prefix : ctrl + b</span><br><span class="line">prefix + d : detach session</span><br></pre></td></tr></table></figure>
+<h2 id="screen-scroll"><a href="#screen-scroll" class="headerlink" title="screen scroll"></a>screen scroll</h2><p><code>prefix + [</code> will initiate <del>scroll move mode</del>. you can use down/up, /(keyword search), pageup/pagedown to move your scren buffer. by pressing ‘q’ or ‘enter’ you can termiate this mode.</p>
+<h2 id="iTerm2-integration"><a href="#iTerm2-integration" class="headerlink" title="iTerm2 integration"></a>iTerm2 integration</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">tmux -CC            # create new tmux session</span><br><span class="line">tmux -CC attach     # attach to existing session</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+      
+
+    
+
+    <footer class="article-footer">
+      <a data-url="http://nberserk.github.io/2019/08/09/tmux/" data-id="ckqe4m43d002mrcqy105x13dx" class="article-share-link">
+        <i class="fa fa-share"></i> Share
+      </a>
+      
+        <a href="http://nberserk.github.io/2019/08/09/tmux/#disqus_thread" class="article-comment-link">
+          <i class="fa fa-comment"></i> Comments
+        </a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/tmux/" rel="tag">tmux</a></li></ul>
+
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-metaphor-sw-architecture" class="article article-type-post" itemscope itemprop="blogPost">
+
+  <header class="article-header">
+    
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2019/05/06/metaphor-sw-architecture/">nice metaphor for sw architecture</a>
+    </h1>
+  
+
+
+  </header>
+
+  <div class="article-meta">
+    <div class="article-datetime">
+  <a href="/2019/05/06/metaphor-sw-architecture/" class="article-date"><time datetime="2019-05-06T15:00:00.000Z" itemprop="datePublished">2019-05-07</time></a>
+</div>
+
+    
+    
+
+  </div>
+  <div class="article-inner">
+
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>최근에 교육을 받았는데 sw architecture에 관해서 기가 막히는 비유라 생각이 들어서 정리해보려 한다.</p>
+<p>다들 잘 아는 피카소 그림중에 아래와 같은 2개의 그림이 있다. </p>
+<p><img src="/images/eva.jpg" alt="alt text" title="nude It&#39;s eva"><br><img src="/images/mandolin.jpg" alt="alt text" title="womain playing mandarin"></p>
+<p>피카소의 첫번째 그림은 자신의 연인을 여러 각도에서 본 모습을 그림으로 옮겨 놓아서 언뜻 보면 어떤 그림인지 알아보기 힘들게 되어 있다. 반면에 두번째 그림은 비교적 악기를 연주하는 여자를 그린것임을 직관적으로 알 수 있다. </p>
+<p>이렇듯 sw란 것은 작성하는 사람에 따라서 같은 내용도 자유도가 높기 때문에 다양하게 표현될 수 있고 나중에 완성한 것을 다른 사람이 봤을때는 알아보기 어렵다는 것이 꼭 소프트웨어의 속성과 닮아 있다고 비유를 한 것이다. </p>
+<p>SW architect의 역할은 다른 사람이 봤을때도 한사람이 그린것처럼 쉽게 만드는 것이라는 비유도 참 적절한 비유가 아닌가 하는 생각이 든다. </p>
+
+      
+    </div>
+
+    
+      
+
+    
+
+    <footer class="article-footer">
+      <a data-url="http://nberserk.github.io/2019/05/06/metaphor-sw-architecture/" data-id="ckqe4m43e002nrcqyn6r1mlh1" class="article-share-link">
+        <i class="fa fa-share"></i> Share
+      </a>
+      
+        <a href="http://nberserk.github.io/2019/05/06/metaphor-sw-architecture/#disqus_thread" class="article-comment-link">
+          <i class="fa fa-comment"></i> Comments
+        </a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/general/" rel="tag">general</a></li></ul>
+
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-custom-jacoco-filter" class="article article-type-post" itemscope itemprop="blogPost">
+
+  <header class="article-header">
+    
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2019/04/24/custom-jacoco-filter/">implement custom jacoco filter</a>
+    </h1>
+  
+
+
+  </header>
+
+  <div class="article-meta">
+    <div class="article-datetime">
+  <a href="/2019/04/24/custom-jacoco-filter/" class="article-date"><time datetime="2019-04-24T15:00:00.000Z" itemprop="datePublished">2019-04-25</time></a>
+</div>
+
+    
+    
+
+  </div>
+  <div class="article-inner">
+
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p><a href="https://www.eclemma.org/jacoco/" target="_blank" rel="noopener">Jacoco</a> is popular coverage tool for Java worlds. It provides <a href="https://www.eclemma.org/jacoco/trunk/doc/agent.html" target="_blank" rel="noopener">various options</a> to include or exclude specific classes.</p>
+<p>My special requirement is to generate exact coverage report for public functions of non UI classes. Jacoco doesn’t support that functionality. so I want to share my experiences here because I couldn’t find any solution for this.</p>
+<p>The first thing I found was <a href="https://github.com/jacoco/jacoco/wiki/FilteringOptions" target="_blank" rel="noopener">filters</a>. If I can implement my own filter, then that’s all I need. Let’s analyze it more in source code level. After some time, I’ve found <a href="https://github.com/jacoco/jacoco/blob/d3c47652b89267709aae04bec66a68bdf6df9670/org.jacoco.core/src/org/jacoco/core/internal/analysis/filter/Filters.java#L34" target="_blank" rel="noopener">Filter class</a>! It has all required filters for proper coverage reporting.</p>
+<p>Next is implementing my own filter. Let’s reference already existing source code like <a href="https://github.com/jacoco/jacoco/blob/master/org.jacoco.core/src/org/jacoco/core/internal/analysis/filter/AnnotationGeneratedFilter.java" target="_blank" rel="noopener">AnnotationGeneratedFilter.java</a>. Its main functionality is excludding functions annotated by having ‘Generated’ string. </p>
+<p>I <a href="https://github.com/nberserk/jacoco" target="_blank" rel="noopener">forked</a> jacoco project and created <code>_customFilter</code> branch based on <code>0.8.3</code> tag and implemented <a href="https://github.com/nberserk/jacoco/blob/_customFilter/org.jacoco.core/src/org/jacoco/core/internal/analysis/filter/WhiteListFilter.java" target="_blank" rel="noopener">WhiteListFilter</a> and <a href="https://github.com/nberserk/jacoco/blob/_customFilter/org.jacoco.core.test/src/org/jacoco/core/internal/analysis/filter/WhitelistFilterTest.java" target="_blank" rel="noopener">its testcase</a>. </p>
+<p>And I created binary using the following commands. jar files are located in <code>jacoco/target/</code> folder.</p>
+<blockquote>
+<p>mvn clean package -DskipTests=True</p>
+</blockquote>
+<p>last thing you have to do is let gradle use those built jar files. copy those jar files to <code>&lt;root&gt;/lib</code> directory. and change your build.gradle file like the followings.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">dependencies &#123;</span><br><span class="line">    // override jacoco jars</span><br><span class="line">    jacocoAgent files(&quot;$rootProject.projectDir/lib/org.jacoco.agent-0.8.3.201904130250.jar&quot;)</span><br><span class="line">    jacocoAnt files(&quot;$rootProject.projectDir/lib/org.jacoco.ant-0.8.3.201904130250.jar&quot;,</span><br><span class="line">            &quot;$rootProject.projectDir/lib/org.jacoco.core-0.8.3.201904130250.jar&quot;,</span><br><span class="line">            &quot;$rootProject.projectDir/lib/org.jacoco.report-0.8.3.201904130250.jar&quot;,</span><br><span class="line">            &quot;$rootProject.projectDir/lib/asm-7.0.jar&quot;,</span><br><span class="line">            &quot;$rootProject.projectDir/lib/asm-tree-7.0.jar&quot;,</span><br><span class="line">            &quot;$rootProject.projectDir/lib/asm-commons-7.0.jar&quot;</span><br><span class="line">            )</span><br><span class="line">    </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>then last thing you have to is annotate your target class using <code>@TestRequired</code> class.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@TestRequired</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyClass</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">doSomething</span><span class="params">(String str)</span> </span>&#123;</span><br><span class="line">        <span class="comment">// this function will be included in coverage report.</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="title">doSomethingElse</span><span class="params">(String str)</span> </span>&#123;</span><br><span class="line">        <span class="comment">// this function will NOT be included in coverage report.</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+      
+
+    
+
+    <footer class="article-footer">
+      <a data-url="http://nberserk.github.io/2019/04/24/custom-jacoco-filter/" data-id="ckqe4m43b002krcqybmn8le8q" class="article-share-link">
+        <i class="fa fa-share"></i> Share
+      </a>
+      
+        <a href="http://nberserk.github.io/2019/04/24/custom-jacoco-filter/#disqus_thread" class="article-comment-link">
+          <i class="fa fa-comment"></i> Comments
+        </a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/coverage/" rel="tag">coverage</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/jacoco/" rel="tag">jacoco</a></li></ul>
+
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+
+
+  <div id="page-nav">
+    <nav><ul class="pagination"><li class="disabled"><span class="page-prev"><i class="fa fa-chevron-left"></i> Prev</a></li><li class="active"><span class="page-number">1</span></li><li><a class="page-number" href="/page/2/">2</a></li><li><a class="page-number" href="/page/3/">3</a></li><li class="disabled"><span class="page-space">&hellip;</span></li><li><a class="page-number" href="/page/10/">10</a></li><li><a class="page-next" rel="next" href="/page/2/">Next <i class="fa fa-chevron-right"></i></a></li></ul></nav>
+  </div>
+
+
+
+        </div>
+        <div class="col-sm-3 col-sm-offset-1 blog-sidebar">
+          
+  <div class="sidebar-module sidebar-module-inset">
+  <h4>About</h4>
+  <p>Etiam porta <em>sem malesuada magna</em> mollis euismod. Cras mattis consectetur purus sit amet fermentum. Aenean lacinia bibendum nulla sed consectetur.</p>
+
+</div>
+
+
+  
+  <div class="sidebar-module">
+    <h4>Categories</h4>
+    <ul class="sidebar-module-list"><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/categories/algorithm/">algorithm</a><span class="sidebar-module-list-count">5</span></li></ul>
+  </div>
+
+
+
+  
+  <div class="sidebar-module">
+    <h4>Tags</h4>
+    <ul class="sidebar-module-list" itemprop="keywords"><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/CVA/" rel="tag">CVA</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/algorithm/" rel="tag">algorithm</a><span class="sidebar-module-list-count">15</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/angular/" rel="tag">angular</a><span class="sidebar-module-list-count">6</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/aws/" rel="tag">aws</a><span class="sidebar-module-list-count">5</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/c/" rel="tag">c++</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/checkstyle/" rel="tag">checkstyle</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/cloud-architecture/" rel="tag">cloud architecture</a><span class="sidebar-module-list-count">2</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/coverage/" rel="tag">coverage</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/design/" rel="tag">design</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/django/" rel="tag">django</a><span class="sidebar-module-list-count">2</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/docker/" rel="tag">docker</a><span class="sidebar-module-list-count">5</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/dp/" rel="tag">dp</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/dynamo/" rel="tag">dynamo</a><span class="sidebar-module-list-count">2</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/elasticsearch/" rel="tag">elasticsearch</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/emacs/" rel="tag">emacs</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/emr/" rel="tag">emr</a><span class="sidebar-module-list-count">2</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/fzf/" rel="tag">fzf</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/general/" rel="tag">general</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/gerrit/" rel="tag">gerrit</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/git/" rel="tag">git</a><span class="sidebar-module-list-count">3</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/github/" rel="tag">github</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/google/" rel="tag">google</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/graph/" rel="tag">graph</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/hadoop/" rel="tag">hadoop</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/hexo/" rel="tag">hexo</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/invoke/" rel="tag">invoke</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/jacoco/" rel="tag">jacoco</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/java/" rel="tag">java</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/jekyll/" rel="tag">jekyll</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/jenkins/" rel="tag">jenkins</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/kibana/" rel="tag">kibana</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/mailchimp/" rel="tag">mailchimp</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/maven/" rel="tag">maven</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/mgmt/" rel="tag">mgmt</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/mockito/" rel="tag">mockito</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/mybatis/" rel="tag">mybatis</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/mysql/" rel="tag">mysql</a><span class="sidebar-module-list-count">2</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/nosql/" rel="tag">nosql</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/oauth/" rel="tag">oauth</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/proxy/" rel="tag">proxy</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/rake/" rel="tag">rake</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/regex/" rel="tag">regex</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/rest/" rel="tag">rest</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/ripgrep/" rel="tag">ripgrep</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/ruby/" rel="tag">ruby</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/spark/" rel="tag">spark</a><span class="sidebar-module-list-count">7</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/spring-in-action/" rel="tag">spring in action</a><span class="sidebar-module-list-count">4</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/spring-in-actions/" rel="tag">spring in actions</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/sql/" rel="tag">sql</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/ssh/" rel="tag">ssh</a><span class="sidebar-module-list-count">2</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/swagger/" rel="tag">swagger</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/system-design/" rel="tag">system design</a><span class="sidebar-module-list-count">2</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/template/" rel="tag">template</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/tmux/" rel="tag">tmux</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/tree/" rel="tag">tree</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/vscode/" rel="tag">vscode</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/wordgrep/" rel="tag">wordgrep</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/zeppelin/" rel="tag">zeppelin</a><span class="sidebar-module-list-count">1</span></li></ul>
+  </div>
+
+
+
+  
+  <div class="sidebar-module">
+    <h4>Tag Cloud</h4>
+    <p class="tagcloud">
+      <a href="/tags/CVA/" style="font-size: 10px;">CVA</a> <a href="/tags/algorithm/" style="font-size: 20px;">algorithm</a> <a href="/tags/angular/" style="font-size: 17.14px;">angular</a> <a href="/tags/aws/" style="font-size: 15.71px;">aws</a> <a href="/tags/c/" style="font-size: 10px;">c++</a> <a href="/tags/checkstyle/" style="font-size: 10px;">checkstyle</a> <a href="/tags/cloud-architecture/" style="font-size: 11.43px;">cloud architecture</a> <a href="/tags/coverage/" style="font-size: 10px;">coverage</a> <a href="/tags/design/" style="font-size: 10px;">design</a> <a href="/tags/django/" style="font-size: 11.43px;">django</a> <a href="/tags/docker/" style="font-size: 15.71px;">docker</a> <a href="/tags/dp/" style="font-size: 10px;">dp</a> <a href="/tags/dynamo/" style="font-size: 11.43px;">dynamo</a> <a href="/tags/elasticsearch/" style="font-size: 10px;">elasticsearch</a> <a href="/tags/emacs/" style="font-size: 10px;">emacs</a> <a href="/tags/emr/" style="font-size: 11.43px;">emr</a> <a href="/tags/fzf/" style="font-size: 10px;">fzf</a> <a href="/tags/general/" style="font-size: 10px;">general</a> <a href="/tags/gerrit/" style="font-size: 10px;">gerrit</a> <a href="/tags/git/" style="font-size: 12.86px;">git</a> <a href="/tags/github/" style="font-size: 10px;">github</a> <a href="/tags/google/" style="font-size: 10px;">google</a> <a href="/tags/graph/" style="font-size: 10px;">graph</a> <a href="/tags/hadoop/" style="font-size: 10px;">hadoop</a> <a href="/tags/hexo/" style="font-size: 10px;">hexo</a> <a href="/tags/invoke/" style="font-size: 10px;">invoke</a> <a href="/tags/jacoco/" style="font-size: 10px;">jacoco</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/jekyll/" style="font-size: 10px;">jekyll</a> <a href="/tags/jenkins/" style="font-size: 10px;">jenkins</a> <a href="/tags/kibana/" style="font-size: 10px;">kibana</a> <a href="/tags/mailchimp/" style="font-size: 10px;">mailchimp</a> <a href="/tags/maven/" style="font-size: 10px;">maven</a> <a href="/tags/mgmt/" style="font-size: 10px;">mgmt</a> <a href="/tags/mockito/" style="font-size: 10px;">mockito</a> <a href="/tags/mybatis/" style="font-size: 10px;">mybatis</a> <a href="/tags/mysql/" style="font-size: 11.43px;">mysql</a> <a href="/tags/nosql/" style="font-size: 10px;">nosql</a> <a href="/tags/oauth/" style="font-size: 10px;">oauth</a> <a href="/tags/proxy/" style="font-size: 10px;">proxy</a> <a href="/tags/rake/" style="font-size: 10px;">rake</a> <a href="/tags/regex/" style="font-size: 10px;">regex</a> <a href="/tags/rest/" style="font-size: 10px;">rest</a> <a href="/tags/ripgrep/" style="font-size: 10px;">ripgrep</a> <a href="/tags/ruby/" style="font-size: 10px;">ruby</a> <a href="/tags/spark/" style="font-size: 18.57px;">spark</a> <a href="/tags/spring-in-action/" style="font-size: 14.29px;">spring in action</a> <a href="/tags/spring-in-actions/" style="font-size: 10px;">spring in actions</a> <a href="/tags/sql/" style="font-size: 10px;">sql</a> <a href="/tags/ssh/" style="font-size: 11.43px;">ssh</a> <a href="/tags/swagger/" style="font-size: 10px;">swagger</a> <a href="/tags/system-design/" style="font-size: 11.43px;">system design</a> <a href="/tags/template/" style="font-size: 10px;">template</a> <a href="/tags/tmux/" style="font-size: 10px;">tmux</a> <a href="/tags/tree/" style="font-size: 10px;">tree</a> <a href="/tags/vscode/" style="font-size: 10px;">vscode</a> <a href="/tags/wordgrep/" style="font-size: 10px;">wordgrep</a> <a href="/tags/zeppelin/" style="font-size: 10px;">zeppelin</a>
+    </p>
+  </div>
+
+
+  
+  <div class="sidebar-module">
+    <h4>Archives</h4>
+    <ul class="sidebar-module-list"><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2021/06/">6월 2021</a><span class="sidebar-module-list-count">3</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2020/09/">9월 2020</a><span class="sidebar-module-list-count">2</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2020/04/">4월 2020</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2019/11/">11월 2019</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2019/08/">8월 2019</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2019/05/">5월 2019</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2019/04/">4월 2019</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2019/02/">2월 2019</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2019/01/">1월 2019</a><span class="sidebar-module-list-count">4</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2018/12/">12월 2018</a><span class="sidebar-module-list-count">2</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2018/11/">11월 2018</a><span class="sidebar-module-list-count">2</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2018/10/">10월 2018</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2018/08/">8월 2018</a><span class="sidebar-module-list-count">4</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2018/07/">7월 2018</a><span class="sidebar-module-list-count">5</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2018/06/">6월 2018</a><span class="sidebar-module-list-count">5</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2018/05/">5월 2018</a><span class="sidebar-module-list-count">4</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2018/04/">4월 2018</a><span class="sidebar-module-list-count">4</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2018/03/">3월 2018</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2018/02/">2월 2018</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2018/01/">1월 2018</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2017/12/">12월 2017</a><span class="sidebar-module-list-count">2</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2017/11/">11월 2017</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2017/10/">10월 2017</a><span class="sidebar-module-list-count">2</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2017/09/">9월 2017</a><span class="sidebar-module-list-count">2</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2017/07/">7월 2017</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2017/03/">3월 2017</a><span class="sidebar-module-list-count">2</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2017/02/">2월 2017</a><span class="sidebar-module-list-count">2</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2016/12/">12월 2016</a><span class="sidebar-module-list-count">3</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2016/11/">11월 2016</a><span class="sidebar-module-list-count">12</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2016/07/">7월 2016</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2016/06/">6월 2016</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2016/04/">4월 2016</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2016/03/">3월 2016</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2016/02/">2월 2016</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2016/01/">1월 2016</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2015/12/">12월 2015</a><span class="sidebar-module-list-count">2</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2015/11/">11월 2015</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2015/10/">10월 2015</a><span class="sidebar-module-list-count">1</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2015/08/">8월 2015</a><span class="sidebar-module-list-count">2</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2015/07/">7월 2015</a><span class="sidebar-module-list-count">4</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2015/06/">6월 2015</a><span class="sidebar-module-list-count">5</span></li></ul>
+  </div>
+
+
+
+  
+  <div class="sidebar-module">
+    <h4>Recents</h4>
+    <ul class="sidebar-module-list">
+      
+        <li>
+          <a href="/2021/06/13/top-K-problem/">Top K problem</a>
+        </li>
+      
+        <li>
+          <a href="/2021/06/12/consistent-hashing/">Design distributed Cache</a>
+        </li>
+      
+        <li>
+          <a href="/2021/06/03/distributed-message-queue/">distribute message queue</a>
+        </li>
+      
+        <li>
+          <a href="/2020/09/06/design-patterns/">design patterns</a>
+        </li>
+      
+        <li>
+          <a href="/2020/08/31/wordgrep-pp/">WordGrep Privacy Policy</a>
+        </li>
+      
+    </ul>
+  </div>
+
+
+
+        </div>
+    </div>
+  </div>
+  <footer class="blog-footer">
+  <div class="container">
+    <div id="footer-info" class="inner">
+      &copy; 2021 @nberserk<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+  
+<script>
+  var disqus_shortname = 'nberserk';
+  
+  (function(){
+    var dsq = document.createElement('script');
+    dsq.type = 'text/javascript';
+    dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/count.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js" integrity="sha384-8gBf6Y4YYq7Jx97PIqmTwLPin4hxIzQw5aDmUg/DDhul9fFpbbLcLh3nTIIDJKhx" crossorigin="anonymous"></script>
+
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+</body>
+</html>
