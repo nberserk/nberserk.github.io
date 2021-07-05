@@ -1,0 +1,412 @@
+<?xml version="1.0" encoding="UTF-8"?><?xml-stylesheet type="text/xsl" href="sitemap.xsl"?>
+<urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
+
+    <url>
+        <loc>http://nberserk.github.io/tags/design/</loc>
+        <lastmod>2021-07-04T00:58:58.858Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>http://nberserk.github.io/tags/system-design/</loc>
+        <lastmod>2021-06-27T22:09:23.958Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>http://nberserk.github.io/tags/algorithm/</loc>
+        <lastmod>2021-06-25T05:24:02.752Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>http://nberserk.github.io/tags/CVA/</loc>
+        <lastmod>2021-05-30T05:30:39.778Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>http://nberserk.github.io/tags/wordgrep/</loc>
+        <lastmod>2021-05-30T05:30:39.778Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>http://nberserk.github.io/tags/ruby/</loc>
+        <lastmod>2021-05-30T05:30:39.778Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>http://nberserk.github.io/tags/rake/</loc>
+        <lastmod>2021-05-30T05:30:39.778Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>http://nberserk.github.io/tags/ripgrep/</loc>
+        <lastmod>2021-05-30T05:30:39.778Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>http://nberserk.github.io/tags/fzf/</loc>
+        <lastmod>2021-05-30T05:30:39.778Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>http://nberserk.github.io/tags/general/</loc>
+        <lastmod>2021-05-30T05:30:39.778Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>http://nberserk.github.io/tags/tmux/</loc>
+        <lastmod>2021-05-30T05:30:39.778Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>http://nberserk.github.io/tags/coverage/</loc>
+        <lastmod>2021-05-30T05:30:39.778Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>http://nberserk.github.io/tags/jacoco/</loc>
+        <lastmod>2021-05-30T05:30:39.778Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>http://nberserk.github.io/tags/mgmt/</loc>
+        <lastmod>2021-05-30T05:30:39.777Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>http://nberserk.github.io/tags/graph/</loc>
+        <lastmod>2021-05-30T05:30:39.777Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>http://nberserk.github.io/tags/emr/</loc>
+        <lastmod>2021-05-30T05:30:39.777Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>http://nberserk.github.io/tags/google/</loc>
+        <lastmod>2021-05-30T05:30:39.777Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>http://nberserk.github.io/tags/template/</loc>
+        <lastmod>2021-05-30T05:30:39.777Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>http://nberserk.github.io/tags/aws/</loc>
+        <lastmod>2021-05-30T05:30:39.777Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>http://nberserk.github.io/tags/spark/</loc>
+        <lastmod>2021-05-30T05:30:39.777Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>http://nberserk.github.io/tags/invoke/</loc>
+        <lastmod>2021-05-30T05:30:39.776Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>http://nberserk.github.io/tags/nosql/</loc>
+        <lastmod>2021-05-30T05:30:39.776Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>http://nberserk.github.io/tags/dynamo/</loc>
+        <lastmod>2021-05-30T05:30:39.776Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>http://nberserk.github.io/tags/mysql/</loc>
+        <lastmod>2021-05-30T05:30:39.776Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>http://nberserk.github.io/tags/spring-in-actions/</loc>
+        <lastmod>2021-05-30T05:30:39.775Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>http://nberserk.github.io/tags/spring-in-action/</loc>
+        <lastmod>2021-05-30T05:30:39.775Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>http://nberserk.github.io/tags/angular/</loc>
+        <lastmod>2021-05-30T05:30:39.775Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>http://nberserk.github.io/tags/docker/</loc>
+        <lastmod>2021-05-30T05:30:39.775Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>http://nberserk.github.io/tags/cloud-architecture/</loc>
+        <lastmod>2021-05-30T05:30:39.774Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>http://nberserk.github.io/tags/mybatis/</loc>
+        <lastmod>2021-05-30T05:30:39.773Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>http://nberserk.github.io/tags/github/</loc>
+        <lastmod>2021-05-30T05:30:39.772Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>http://nberserk.github.io/tags/gerrit/</loc>
+        <lastmod>2021-05-30T05:30:39.772Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>http://nberserk.github.io/tags/hexo/</loc>
+        <lastmod>2021-05-30T05:30:39.772Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>http://nberserk.github.io/tags/mockito/</loc>
+        <lastmod>2021-05-30T05:30:39.772Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>http://nberserk.github.io/tags/c/</loc>
+        <lastmod>2021-05-30T05:30:39.772Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>http://nberserk.github.io/tags/git/</loc>
+        <lastmod>2021-05-30T05:30:39.772Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>http://nberserk.github.io/tags/vscode/</loc>
+        <lastmod>2021-05-30T05:30:39.771Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>http://nberserk.github.io/tags/sql/</loc>
+        <lastmod>2021-05-30T05:30:39.771Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>http://nberserk.github.io/tags/checkstyle/</loc>
+        <lastmod>2021-05-30T05:30:39.771Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>http://nberserk.github.io/tags/regex/</loc>
+        <lastmod>2021-05-30T05:30:39.770Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>http://nberserk.github.io/tags/jenkins/</loc>
+        <lastmod>2021-05-30T05:30:39.770Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>http://nberserk.github.io/tags/java/</loc>
+        <lastmod>2021-05-30T05:30:39.770Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>http://nberserk.github.io/tags/mailchimp/</loc>
+        <lastmod>2021-05-30T05:30:39.770Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>http://nberserk.github.io/tags/oauth/</loc>
+        <lastmod>2021-05-30T05:30:39.769Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>http://nberserk.github.io/tags/kibana/</loc>
+        <lastmod>2021-05-30T05:30:39.769Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>http://nberserk.github.io/tags/elasticsearch/</loc>
+        <lastmod>2021-05-30T05:30:39.769Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>http://nberserk.github.io/tags/proxy/</loc>
+        <lastmod>2021-05-30T05:30:39.768Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>http://nberserk.github.io/tags/django/</loc>
+        <lastmod>2021-05-30T05:30:39.768Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>http://nberserk.github.io/tags/dp/</loc>
+        <lastmod>2021-05-30T05:30:39.767Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>http://nberserk.github.io/tags/tree/</loc>
+        <lastmod>2021-05-30T05:30:39.766Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>http://nberserk.github.io/tags/ssh/</loc>
+        <lastmod>2021-05-30T05:30:39.763Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>http://nberserk.github.io/tags/maven/</loc>
+        <lastmod>2021-05-30T05:30:39.762Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>http://nberserk.github.io/tags/swagger/</loc>
+        <lastmod>2021-05-30T05:30:39.762Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>http://nberserk.github.io/tags/emacs/</loc>
+        <lastmod>2021-05-30T05:30:39.762Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>http://nberserk.github.io/tags/rest/</loc>
+        <lastmod>2021-05-30T05:30:39.761Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>http://nberserk.github.io/tags/zeppelin/</loc>
+        <lastmod>2021-05-30T05:30:39.761Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>http://nberserk.github.io/tags/hadoop/</loc>
+        <lastmod>2021-05-30T05:30:39.760Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>http://nberserk.github.io/tags/jekyll/</loc>
+        <lastmod>2021-05-30T05:30:39.760Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+</urlset>
+<!-- XML Sitemap generated by Hexo SEO Friendly Sitemap Generator -->

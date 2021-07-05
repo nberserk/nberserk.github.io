@@ -1,0 +1,510 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Inertia</title>
+  
+  <subtitle>life log</subtitle>
+  <link href="/atom.xml" rel="self"/>
+  
+  <link href="http://nberserk.github.io/"/>
+  <updated>2021-06-28T00:45:55.561Z</updated>
+  <id>http://nberserk.github.io/</id>
+  
+  <author>
+    <name>@nberserk</name>
+    
+  </author>
+  
+  <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>select the right db</title>
+    <link href="http://nberserk.github.io/2021/06/26/select-db/"/>
+    <id>http://nberserk.github.io/2021/06/26/select-db/</id>
+    <published>2021-06-26T15:00:00.000Z</published>
+    <updated>2021-06-28T00:45:55.561Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="DB-selection"><a href="#DB-selection" class="headerlink" title="DB selection"></a>DB selection</h2><p><a href="https://www.youtube.com/watch?v=cODCpXtPHbQ">https://www.youtube.com/watch?v=cODCpXtPHbQ</a></p><ul><li>Structured data<ul><li>yes<ul><li>Need ACID<ul><li>RDBMS(yes): mysql, orcle, sql server, postgres</li></ul></li></ul></li><li>no<ul><li>Ever increasing data &amp;&amp; + finite queries -&gt; Columnar DB: Cassandra, HBase</li><li>++ Data types &amp;&amp; ++ queries -&gt; document DB: mongoDB, Couch Base</li></ul></li></ul></li></ul><p>interesting example: At ecommerece site, we shouldn’t sell more than the remaining quantity. it should support ACID. so we can use SQL before placing order. but once order is created, then you can use MongoDB to save the data.</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;h2 id=&quot;DB-selection&quot;&gt;&lt;a href=&quot;#DB-selection&quot; class=&quot;headerlink&quot; title=&quot;DB selection&quot;&gt;&lt;/a&gt;DB selection&lt;/h2&gt;&lt;p&gt;&lt;a href=&quot;https://www.youtube.c
+      
+    
+    </summary>
+    
+    
+      <category term="design" scheme="http://nberserk.github.io/tags/design/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Rate limiting service</title>
+    <link href="http://nberserk.github.io/2021/06/26/rate-limiter/"/>
+    <id>http://nberserk.github.io/2021/06/26/rate-limiter/</id>
+    <published>2021-06-26T15:00:00.000Z</published>
+    <updated>2021-07-04T00:58:58.858Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="Requirements"><a href="#Requirements" class="headerlink" title="Requirements"></a>Requirements</h2><p>functional:</p><ul><li>allowRequest(request)</li></ul><p>non functiona:</p><ul><li>low latency</li><li>accurate</li><li>scalable</li><li><del>highly available</del> since we can assume that default is allow the request if the throttling service is not available.</li></ul><h2 id="request-processing"><a href="#request-processing" class="headerlink" title="request processing"></a>request processing</h2><h2 id="token-bucket-algorithm"><a href="#token-bucket-algorithm" class="headerlink" title="token bucket algorithm"></a>token bucket algorithm</h2><h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;h2 id=&quot;Requirements&quot;&gt;&lt;a href=&quot;#Requirements&quot; class=&quot;headerlink&quot; title=&quot;Requirements&quot;&gt;&lt;/a&gt;Requirements&lt;/h2&gt;&lt;p&gt;functional:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;allow
+      
+    
+    </summary>
+    
+    
+      <category term="design" scheme="http://nberserk.github.io/tags/design/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Top K problem</title>
+    <link href="http://nberserk.github.io/2021/06/13/top-K-problem/"/>
+    <id>http://nberserk.github.io/2021/06/13/top-K-problem/</id>
+    <published>2021-06-13T15:00:00.000Z</published>
+    <updated>2021-06-22T01:29:35.478Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="Requirements"><a href="#Requirements" class="headerlink" title="Requirements"></a>Requirements</h2><p>functional</p><ul><li>topK(k, startTime, endTime)</li><li>scalable</li><li>available</li><li>highly performant: few ten milliseconds to return top 100 list</li><li>accurate</li></ul><h2 id="single-host-approach"><a href="#single-host-approach" class="headerlink" title="single host approach"></a>single host approach</h2><p><img src="https://user-images.githubusercontent.com/900639/122692932-788e2280-d1ec-11eb-9cfb-0249ec71d401.png" alt="image"></p><ul><li>build hashTable&lt;Key, Count&gt; <ul><li>sort the whole list: O(nLog(n))</li><li>use heap: O(nLog(k))</li></ul></li></ul><p>but it’s not scalable.</p><h2 id="Hash-table-multiple-hosts"><a href="#Hash-table-multiple-hosts" class="headerlink" title="Hash table, multiple hosts"></a>Hash table, multiple hosts</h2><p><img src="https://user-images.githubusercontent.com/900639/122692782-d5d5a400-d1eb-11eb-9bf4-00d09955517a.png" alt="image"></p><p>you can scale previous approach by using data paritioner. scalability and througput has been addressed.</p><p>But streaming data is not bounded. It has infinite data. what if we need to calculate top K for a day or a week?</p><h2 id="count-min-sketch-multiple-hosts"><a href="#count-min-sketch-multiple-hosts" class="headerlink" title="count-min sketch, multiple hosts"></a>count-min sketch, multiple hosts</h2><p>There is well-known data structure called count-min sketch, kind of approximation algorithm, which guarantees fixed memory usage. basically it tradedoff between accuracy and memory. </p><p><img src="https://user-images.githubusercontent.com/900639/122708501-2c090e00-d211-11eb-93de-435e82166873.png" alt="image"></p><p>count-min sketch uses 2 dimensional array, each row is different hash function, column is count. whenever new event comes in, calculate hash value for each row, and increment the value of the cell by 1. This means that it could have collision, that’s why we take the smallest value as a result.</p><p>But this doesn’t give us accurate top K lists. if constraints don’t allow inaccuracy, then we need a different approach.</p><h2 id="high-level-design"><a href="#high-level-design" class="headerlink" title="high level design"></a>high level design</h2><p><img src="https://user-images.githubusercontent.com/900639/122709631-80ad8880-d213-11eb-8601-41b433e54634.png" alt="image"></p><h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2><ul><li><a href="https://www.youtube.com/watch?v=kx-XDoPjoHw" target="_blank" rel="noopener">https://www.youtube.com/watch?v=kx-XDoPjoHw</a></li><li><a href="http://nathanmarz.com/blog/how-to-beat-the-cap-theorem.html" target="_blank" rel="noopener">http://nathanmarz.com/blog/how-to-beat-the-cap-theorem.html</a></li></ul>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;h2 id=&quot;Requirements&quot;&gt;&lt;a href=&quot;#Requirements&quot; class=&quot;headerlink&quot; title=&quot;Requirements&quot;&gt;&lt;/a&gt;Requirements&lt;/h2&gt;&lt;p&gt;functional&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;topK(k
+      
+    
+    </summary>
+    
+    
+      <category term="system design" scheme="http://nberserk.github.io/tags/system-design/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Design distributed Cache</title>
+    <link href="http://nberserk.github.io/2021/06/12/distributed-cache/"/>
+    <id>http://nberserk.github.io/2021/06/12/distributed-cache/</id>
+    <published>2021-06-12T15:00:00.000Z</published>
+    <updated>2021-06-27T22:09:23.958Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="Requirements"><a href="#Requirements" class="headerlink" title="Requirements"></a>Requirements</h2><p>Functional:</p><ul><li>put(key, value)</li><li>get(key)</li></ul><p>Non-Functional:</p><ul><li>Scalable</li><li>highly available(survives hardware/network failures)</li><li>highly performant(fast put/get)</li></ul><h2 id="LRU-Cache"><a href="#LRU-Cache" class="headerlink" title="LRU Cache"></a>LRU Cache</h2><p>The basic data structure for cache would be <strong>hash table</strong> since it provides O(1) time complexity for put/get operation. So far so good. </p><p>One machine has finite memory capacity so we can’t put keys endlessely. If the cache is full, we need to delete existing data so that we can add new one. Then which key should be evicted(deleted)? This is called <a href="https://en.wikipedia.org/wiki/Cache_replacement_policies">cache eviction(replacement) policy</a>. The most popular one is Least recently Used(LRU).</p><p>LRU discards the least recently used items first. So the algorithm needs to keep track of access time of the items. </p><p>Order can be easily expressed by linked list and cache is basically hash table. Then we can combine these two into one data structure, called <strong>Linked Hash Table.</strong>. basic idea is whenever the key is accessed, we add the item into head of the list. Then the tail of the list will be always the one last accessed, which is the target item to be removed when capacity is full.</p><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Node</span></span>&#123;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> String key;</span><br><span class="line">  <span class="keyword">private</span> String value;</span><br><span class="line">  <span class="keyword">private</span> Node prev, next;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="title">Node</span><span class="params">(String key, String value)</span></span>&#123;</span><br><span class="line">    <span class="keyword">this</span>.key=key;</span><br><span class="line">    <span class="keyword">this</span>.value=value;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">LRUCache</span></span>&#123;</span><br><span class="line">  Map&lt;String, Node&gt; map;</span><br><span class="line">  <span class="keyword">int</span> capacity;</span><br><span class="line">  NOde head = <span class="keyword">null</span>;</span><br><span class="line">  Node tail = <span class="keyword">null</span>;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">private</span> <span class="title">deleteFromList</span><span class="params">(Node node)</span></span>&#123;</span><br><span class="line"></span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">private</span> <span class="title">setListHead</span><span class="params">(Node node)</span></span>&#123;</span><br><span class="line"></span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="title">put</span><span class="params">(String key, String value)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span>(map.containsKey(key))&#123;</span><br><span class="line">      map.get(key).setValue(value);</span><br><span class="line">      deleteFromList(node);</span><br><span class="line">      setListHead(node);</span><br><span class="line">    &#125; <span class="keyword">else</span>&#123;</span><br><span class="line">      <span class="keyword">if</span>(map.size()&gt;=capacity)&#123;</span><br><span class="line">        map.remove(tail.getKey());</span><br><span class="line">        deleteFromList(tail);</span><br><span class="line">      &#125;</span><br><span class="line">      Node node = <span class="keyword">new</span> Node(key,value);</span><br><span class="line">      map.put(key, node);</span><br><span class="line">      setListHead(node);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">public</span> String <span class="title">get</span><span class="params">(String key)</span></span>&#123;</span><br><span class="line">    <span class="keyword">if</span>(!map.containsKey(key))&#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    Node node = map.get(key);</span><br><span class="line">    deleteFromList(node);</span><br><span class="line">    setListHead(node);</span><br><span class="line">    <span class="keyword">return</span> node.getValue();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><h2 id="2-possible-approaches"><a href="#2-possible-approaches" class="headerlink" title="2 possible approaches"></a>2 possible approaches</h2><h3 id="dedicated-cache-cluster"><a href="#dedicated-cache-cluster" class="headerlink" title="dedicated cache cluster"></a>dedicated cache cluster</h3><ul><li>isolation of resources between service and cache</li><li>can be used by multiple services</li><li>flexibility in choosing hardware<h3 id="co-located-cache"><a href="#co-located-cache" class="headerlink" title="co-located cache"></a>co-located cache</h3>cache service is co-located with the service host.</li><li>No extra hardware and operation cost</li><li>scales together with the service</li></ul><h2 id="choosing-a-cache-host"><a href="#choosing-a-cache-host" class="headerlink" title="choosing a cache host"></a>choosing a cache host</h2><p>Definitely one cache host can’t server all the items. They need to be split across multiple hosts by hash of key of the item. How keys can be distributed? </p><h3 id="MOD"><a href="#MOD" class="headerlink" title="MOD"></a>MOD</h3><p>Cache host number = hash_function(key) MOD #hosts</p><p>mod operator would be the most easy one to implement but it has obvious weakness. entire cache need to be rewritten whenever a new host is added or deleted. Generally this kind of overhead is not acceptable in production environment.</p><h3 id="Consistent-hashing"><a href="#Consistent-hashing" class="headerlink" title="Consistent hashing"></a>Consistent hashing</h3><p>consistent hashing is basically placing host on a circle. 12 oclock will be value 0 or 2^32. the point will be mapped to the point on the circle boundary based on the hash value. for example 2^32/4 will be mapped to 3 o’clock. we will place cache host along the circle with even distance. the keys between the two hosts belong to the first clockwise host. </p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">before:</span><br><span class="line">H1 --- H2 --- H3 --- H1</span><br><span class="line"></span><br><span class="line">after:</span><br><span class="line">H1 --- H2 --- H2.5 --- H3 --- H1</span><br></pre></td></tr></table></figure><p>Let’s say we added H2.5 between H2 and H3. then the affected hosts are H2 and only. very limited blast radius compared to the MOD approach.</p><h2 id="Cache-client"><a href="#Cache-client" class="headerlink" title="Cache client"></a>Cache client</h2><p>cache client knows about all cache servers. all cache clients should have the same list of servers. It stores list of servers in sorted order. just like TreeMap in java. binary search is used to identify server, which is O(logn). It uses TCP or UDP protocol to talke to servers. If cache server is unavailable, client proceeds as if it was a cache miss. </p><h3 id="maintaining-a-list-of-cache-servers"><a href="#maintaining-a-list-of-cache-servers" class="headerlink" title="maintaining a list of cache servers"></a>maintaining a list of cache servers</h3><ul><li>use configuration file in local host</li><li>use external file like S3</li><li>use configuration service like ZooKeeper<ul><li>config service will check heartbeat with all the cache hosts. if it fails it will be deleted from the cache list</li></ul></li></ul><h2 id="high-availability"><a href="#high-availability" class="headerlink" title="high availability"></a>high availability</h2><p>hot shard problem can be solved by replication.</p><p>there are two categories of data replication protocols.</p><ul><li>a set of probablistic protocol -&gt; eventual consistency<ul><li>gossip</li><li>epdemic broadcast</li><li>trees</li><li>bimodal multicast</li></ul></li><li>consensus protocol -&gt; strong consistency<ul><li>2 or 3 phase commit</li><li>paxos</li><li>raft</li><li>chain replication</li></ul></li></ul><p>master-slave replication</p><h2 id="what-else"><a href="#what-else" class="headerlink" title="what else?"></a>what else?</h2><ul><li>consistency. The consistency issues can happen. consistency can be achieved by performing synchronous replication. but this will introduce additional latency and overall complexity of the system. so it’s heavily depends on the service requireemnts.</li><li><p>data expiration. The data can be expired after some time later depends on business requiremetns. If that’s the case we can schedule a batch job to remove expired keys. Or passively delete expired cache on a regular basis.</p></li><li><p>Local cache can be used on the clinet library side. LRU cache or Guava cache can be used.</p></li><li>Security.<ul><li>firewall</li><li>encrypt the data</li></ul></li><li>monitoring and loggin<ul><li>number of errors, latency, cache hit/miss, cpu, memory</li></ul></li><li>cache client<ul><li>maintain a list of cache servers</li><li>pick a shard</li><li>remote call</li><li>delegate many responsibilities to proxy, ref twemproxy project<br>or make cache servers responsible for picking a shard</li></ul></li><li>consistent hasing has 2 flaws. domino effect and not split the circle evenly-&gt; add server on the circle multiple times</li></ul><h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2><ul><li><a href="https://youtu.be/iuqZvajTOyA">https://youtu.be/iuqZvajTOyA</a></li><li>TCP vs UDP, <a href="https://www.geeksforgeeks.org/differences-between-tcp-and-udp/">https://www.geeksforgeeks.org/differences-between-tcp-and-udp/</a></li></ul>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;h2 id=&quot;Requirements&quot;&gt;&lt;a href=&quot;#Requirements&quot; class=&quot;headerlink&quot; title=&quot;Requirements&quot;&gt;&lt;/a&gt;Requirements&lt;/h2&gt;&lt;p&gt;Functional:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;put(k
+      
+    
+    </summary>
+    
+    
+      <category term="system design" scheme="http://nberserk.github.io/tags/system-design/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>distribute message queue</title>
+    <link href="http://nberserk.github.io/2021/06/03/distributed-message-queue/"/>
+    <id>http://nberserk.github.io/2021/06/03/distributed-message-queue/</id>
+    <published>2021-06-03T15:00:00.000Z</published>
+    <updated>2021-06-28T00:44:52.287Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="requirements"><a href="#requirements" class="headerlink" title="requirements"></a>requirements</h2><p>Functional</p><ul><li>sendMsg(messageBody)</li><li>receiveMessage()</li></ul><p>Non-functional</p><ul><li>scalable(handles load increases, more queues, and messages)</li><li>highly avaiable(survive hardware/network failures)</li><li>performant(single digit latency for main operations)</li><li>durable(once submitted, data is not lost)</li></ul><h2 id="High-level-architecture"><a href="#High-level-architecture" class="headerlink" title="High-level architecture"></a>High-level architecture</h2><p><img src="https://user-images.githubusercontent.com/900639/123561015-d2499c00-d75a-11eb-9c83-28613d939fe2.png" alt="image"></p><h2 id="VIP-and-Load-balancer"><a href="#VIP-and-Load-balancer" class="headerlink" title="VIP and Load balancer"></a>VIP and Load balancer</h2><p>VIP can be SPOF. so VIP partitioning is required.</p><p><img src="https://user-images.githubusercontent.com/900639/123561052-1d63af00-d75b-11eb-8788-d3c35f2371e6.png" alt="image"></p><h2 id="FrontEnd-Service"><a href="#FrontEnd-Service" class="headerlink" title="FrontEnd Service"></a>FrontEnd Service</h2><ul><li>a lightweight web service</li><li>stateless service deployed across several data centers</li></ul><p>Functions</p><ul><li>request validation<ul><li>required parameters are present</li><li>data falss within an acceptable range</li></ul></li><li>Authentication/Authorization<ul><li>validating identity of a user of a service</li><li></li></ul></li><li>TLS(SSL) termination<ul><li>SSL on the load balancer is expensive</li><li>termination is </li></ul></li><li>Server-side encryption</li><li>Caching</li><li>Rate limiting(Throttling)<ul><li>leaky bucket algorithm</li></ul></li><li>request dispatching<ul><li>circuit breaker pattern prevents an application from repeately trying to execute an opertion that will be likely to fail</li><li>bulkhead pattern helps to isolate elements of an application into pools so that if one fails, the other will continue to function.</li></ul></li><li>request depulication<ul><li>may occur when a successful sendMessage fails to reach a client.</li></ul></li><li>usage data collection<ul><li>billing/ realtime usage</li></ul></li></ul><h2 id="Metadata-service"><a href="#Metadata-service" class="headerlink" title="Metadata service"></a>Metadata service</h2><ul><li>caching layer between frontend and a storage</li><li>many read, little writes</li><li>strong consistency storage preferred</li></ul><p><img src="https://user-images.githubusercontent.com/900639/123562894-58b7ab00-d766-11eb-825c-a607022ddf6f.png" alt="image"></p><h2 id="backend-service"><a href="#backend-service" class="headerlink" title="backend service"></a>backend service</h2><ul><li>where and how do we store message? -&gt; RAM and local disk</li><li>how do we replicate data?</li><li>how does FrontEnd select a backend host to send data to? Metadata service</li><li>how does frontend know where to retrive data from? Metadata service</li></ul><h3 id="Option-A-Leader-follower-relationshiop"><a href="#Option-A-Leader-follower-relationshiop" class="headerlink" title="Option A: Leader-follower relationshiop"></a>Option A: Leader-follower relationshiop</h3><p><img src="https://user-images.githubusercontent.com/900639/123564263-9cfa7980-d76d-11eb-93f6-cae05e3e7262.png" alt="image"></p><h3 id="OPtion-B"><a href="#OPtion-B" class="headerlink" title="OPtion B:"></a>OPtion B:</h3><p><img src="https://user-images.githubusercontent.com/900639/123564280-b3083a00-d76d-11eb-9ede-73dc47643b62.png" alt="image"></p><p>comparions OPtion A/B :</p><table><thead><tr><th></th><th>in-cluster manager</th><th>out-cluster manager</th><th></th><th></th></tr></thead><tbody><tr><td></td><td>manages queue assignment within the cluster</td><td>managers queue assignment among clusters</td><td></td><td></td></tr><tr><td></td><td>maintains a list of hosts in the cluster</td><td>maintains a list of cluters</td><td></td><td></td></tr><tr><td></td><td>monitors heartbeats from hosts</td><td>monitos each cluster health</td><td></td><td></td></tr><tr><td></td><td>deals with leader and follower failures</td><td>deals with overheated clusters</td><td></td></tr><tr><td></td><td>split queue between cluster nodes(partitioning)</td><td>splits queue between clusters</td></tr></tbody></table><h2 id="What-else-is-important"><a href="#What-else-is-important" class="headerlink" title="What else is important"></a>What else is important</h2><ul><li>Queue creation and deletion</li><li>message deletion<ul><li>do not delete message. it can be deleted by batch job</li><li>consumer needs to call deleteMessae</li></ul></li><li>message replication<ul><li>async replication: low latency. how to sync when one host is down?</li><li>sync replication: high latency. hit consistency</li><li>hard to achieve <code>exactly once delivery</code></li></ul></li><li>push vs pull</li><li>FIFO. doesn’t guarantee the strict order of the message</li><li>security: encrypte messages</li><li>monitoring</li></ul><h2 id="final-look"><a href="#final-look" class="headerlink" title="final look"></a>final look</h2><p><img src="https://user-images.githubusercontent.com/900639/123564724-5279fc80-d76f-11eb-8a57-129d319cb3ae.png" alt="image"></p><h2 id="DB-selection"><a href="#DB-selection" class="headerlink" title="DB selection"></a>DB selection</h2><p><a href="https://www.youtube.com/watch?v=cODCpXtPHbQ">https://www.youtube.com/watch?v=cODCpXtPHbQ</a></p><ul><li>Structured data<ul><li>yes<ul><li>Need ACID<ul><li>RDBMS(yes): mysql, orcle, sql server, postgres</li></ul></li></ul></li><li>no<ul><li>Ever increasing data &amp;&amp; + finite queries -&gt; Columnar DB: Cassandra, HBase</li><li>++ Data types &amp;&amp; ++ queries -&gt; document DB: mongoDB, Couch Base</li></ul></li></ul></li></ul><p>interesting example: At ecommerece site, we shouldn’t sell more than the remaining quantity. it should support ACID. so we can use SQL before placing order. but once order is created, then you can use MongoDB to save the data.</p><h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;h2 id=&quot;requirements&quot;&gt;&lt;a href=&quot;#requirements&quot; class=&quot;headerlink&quot; title=&quot;requirements&quot;&gt;&lt;/a&gt;requirements&lt;/h2&gt;&lt;p&gt;Functional&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;sendMs
+      
+    
+    </summary>
+    
+    
+      <category term="design" scheme="http://nberserk.github.io/tags/design/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>design patterns</title>
+    <link href="http://nberserk.github.io/2020/09/06/design-patterns/"/>
+    <id>http://nberserk.github.io/2020/09/06/design-patterns/</id>
+    <published>2020-09-06T15:00:00.000Z</published>
+    <updated>2021-05-30T05:30:39.778Z</updated>
+    
+    <content type="html"><![CDATA[<p>interesting topics during design pattern lectures</p><h1 id="implmenetation-by-intentions"><a href="#implmenetation-by-intentions" class="headerlink" title="implmenetation by intentions"></a>implmenetation by intentions</h1><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">printReport</span> <span class="params">(String CustomerID)</span> </span>&#123; </span><br><span class="line">    <span class="keyword">if</span>(!isValid(CustomerID)) <span class="keyword">throw</span> <span class="keyword">new</span> ArgumentException(); </span><br><span class="line">    Employee[] emps = getEmployees(CustomerID);</span><br><span class="line">    <span class="keyword">if</span>(needsSorting(emps)) </span><br><span class="line">        sortEmployees(emps); </span><br><span class="line">    printHeader(CustomerID);</span><br><span class="line">    printFormattedEmployees(emps);</span><br><span class="line">    printFooter(CustomerID);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><p>one public method contains multiple private methods fulfilling one specifc logic at a time. it’s your logical sequences when you implement <code>printReport</code> in your head. by doing this you can achieve</p><ul><li>Method cohesion</li><li>separation of concerns<ul><li>sergeant method: calls other methods</li><li>private methods: implementing code</li></ul></li><li>clarity - clear code is better than comments</li><li>easy in finding/forming certain patterns</li><li>no extra work is required</li></ul><h1 id="Commonality-Variability-Analysis-CVA"><a href="#Commonality-Variability-Analysis-CVA" class="headerlink" title="Commonality-Variability Analysis, CVA"></a>Commonality-Variability Analysis, CVA</h1><p>Assume you start a new project solving software problem in a certain domain. you heard bunch of requirments from your clients. how would you find a entities, create an abstraction with whom, find a suitable patterns among them.</p><p>at this time CVA can help you</p><p>requirements</p><ul><li>US Tax</li><li>Canadian PST, GST</li><li>Validation of addresses strcuture in different locations</li></ul><p>from this requirments you can derive a following  potential entities and abstractions.</p><p>examle of CVA:</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">Country</span><br><span class="line">----</span><br><span class="line">US</span><br><span class="line">Canada</span><br><span class="line"></span><br><span class="line">Tax</span><br><span class="line">-----</span><br><span class="line">Canadian Province</span><br><span class="line">Canadian Fed</span><br><span class="line">US</span><br><span class="line"></span><br><span class="line">AddressValidation</span><br><span class="line">------</span><br><span class="line">US</span><br><span class="line">Canada</span><br></pre></td></tr></table></figure>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;interesting topics during design pattern lectures&lt;/p&gt;
+&lt;h1 id=&quot;implmenetation-by-intentions&quot;&gt;&lt;a href=&quot;#implmenetation-by-intentions&quot; class
+      
+    
+    </summary>
+    
+    
+      <category term="CVA" scheme="http://nberserk.github.io/tags/CVA/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>WordGrep Privacy Policy</title>
+    <link href="http://nberserk.github.io/2020/08/31/wordgrep-pp/"/>
+    <id>http://nberserk.github.io/2020/08/31/wordgrep-pp/</id>
+    <published>2020-08-31T15:00:00.000Z</published>
+    <updated>2021-05-30T05:30:39.778Z</updated>
+    
+    <content type="html"><![CDATA[<p><strong>Privacy Policy</strong></p><p>nberserk built the WordGrep app as a Free app. This SERVICE is provided by nberserk at no cost and is intended for use as is.</p><p>This page is used to inform visitors regarding my policies with the collection, use, and disclosure of Personal Information if anyone decided to use my Service.</p><p>If you choose to use my Service, then you agree to the collection and use of information in relation to this policy. The Personal Information that I collect is used for providing and improving the Service. I will not use or share your information with anyone except as described in this Privacy Policy.</p><p>The terms used in this Privacy Policy have the same meanings as in our Terms and Conditions, which is accessible at WordGrep unless otherwise defined in this Privacy Policy.</p><p><strong>Information Collection and Use</strong></p><p>For a better experience, while using our Service, I may require you to provide us with certain personally identifiable information, including but not limited to name. The information that I request will be retained on your device and is not collected by me in any way.</p><p>The app does use third party services that may collect information used to identify you.</p><p>Link to privacy policy of third party service providers used by the app</p><ul><li><a href="https://www.google.com/policies/privacy/" target="_blank" rel="noopener">Google Play Services</a></li><li><a href="https://firebase.google.com/policies/analytics" target="_blank" rel="noopener">Google Analytics for Firebase</a></li></ul><p><strong>Log Data</strong></p><p>I want to inform you that whenever you use my Service, in a case of an error in the app I collect data and information (through third party products) on your phone called Log Data. This Log Data may include information such as your device Internet Protocol (“IP”) address, device name, operating system version, the configuration of the app when utilizing my Service, the time and date of your use of the Service, and other statistics.</p><p><strong>Cookies</strong></p><p>Cookies are files with a small amount of data that are commonly used as anonymous unique identifiers. These are sent to your browser from the websites that you visit and are stored on your device’s internal memory.</p><p>This Service does not use these “cookies” explicitly. However, the app may use third party code and libraries that use “cookies” to collect information and improve their services. You have the option to either accept or refuse these cookies and know when a cookie is being sent to your device. If you choose to refuse our cookies, you may not be able to use some portions of this Service.</p><p><strong>Service Providers</strong></p><p>I may employ third-party companies and individuals due to the following reasons:</p><ul><li>To facilitate our Service;</li><li>To provide the Service on our behalf;</li><li>To perform Service-related services; or</li><li>To assist us in analyzing how our Service is used.</li></ul><p>I want to inform users of this Service that these third parties have access to your Personal Information. The reason is to perform the tasks assigned to them on our behalf. However, they are obligated not to disclose or use the information for any other purpose.</p><p><strong>Security</strong></p><p>I value your trust in providing us your Personal Information, thus we are striving to use commercially acceptable means of protecting it. But remember that no method of transmission over the internet, or method of electronic storage is 100% secure and reliable, and I cannot guarantee its absolute security.</p><p><strong>Links to Other Sites</strong></p><p>This Service may contain links to other sites. If you click on a third-party link, you will be directed to that site. Note that these external sites are not operated by me. Therefore, I strongly advise you to review the Privacy Policy of these websites. I have no control over and assume no responsibility for the content, privacy policies, or practices of any third-party sites or services.</p><p><strong>Children’s Privacy</strong></p><p>These Services do not address anyone under the age of 13. I do not knowingly collect personally identifiable information from children under 13. In the case I discover that a child under 13 has provided me with personal information, I immediately delete this from our servers. If you are a parent or guardian and you are aware that your child has provided us with personal information, please contact me so that I will be able to do necessary actions.</p><p><strong>Changes to This Privacy Policy</strong></p><p>I may update our Privacy Policy from time to time. Thus, you are advised to review this page periodically for any changes. I will notify you of any changes by posting the new Privacy Policy on this page.</p><p>This policy is effective as of 2020-09-02</p><p><strong>Contact Us</strong></p><p>If you have any questions or suggestions about my Privacy Policy, do not hesitate to contact me at <a href="mailto:wordgrep@gmail.com" target="_blank" rel="noopener">wordgrep@gmail.com</a>.</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;&lt;strong&gt;Privacy Policy&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;nberserk built the WordGrep app as a Free app. This SERVICE is provided by nberserk at no cost and
+      
+    
+    </summary>
+    
+    
+      <category term="wordgrep" scheme="http://nberserk.github.io/tags/wordgrep/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>rake</title>
+    <link href="http://nberserk.github.io/2020/04/20/rake/"/>
+    <id>http://nberserk.github.io/2020/04/20/rake/</id>
+    <published>2020-04-20T15:00:00.000Z</published>
+    <updated>2021-05-30T05:30:39.778Z</updated>
+    
+    <content type="html"><![CDATA[<p>rake is Makefile for ruby world. I am not big fan of Ruby but I like Rake as a task execuion library.</p><h1 id="task-defintion-amp-dependency"><a href="#task-defintion-amp-dependency" class="headerlink" title="task defintion &amp; dependency"></a>task defintion &amp; dependency</h1><figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">task <span class="symbol">:A</span> <span class="keyword">do</span></span><br><span class="line">    sh <span class="string">"echo A task executed"</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">task <span class="symbol">B:</span> [<span class="symbol">:A</span> ] <span class="keyword">do</span></span><br><span class="line">    sh <span class="string">"echo A task executed"</span></span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure><h1 id="find-directory-where-rake-is-invoked"><a href="#find-directory-where-rake-is-invoked" class="headerlink" title="find directory where rake is invoked."></a>find directory where rake is invoked.</h1><p>sometimes, maven or gradle build command should be executed at project root directory. but current directory is changed by Rake where the Rakefile is located. so build command would fail by that reason. in this case we can get the origial directory by using the following Ruby APIs.</p><figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">dir = Rake.application.original_dir</span><br><span class="line">Dir.chdir(dir) <span class="keyword">do</span></span><br><span class="line">    sh <span class="string">"mvn"</span></span><br><span class="line">    sh <span class="string">"gradle"</span></span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;rake is Makefile for ruby world. I am not big fan of Ruby but I like Rake as a task execuion library.&lt;/p&gt;
+&lt;h1 id=&quot;task-defintion-amp-depe
+      
+    
+    </summary>
+    
+    
+      <category term="rake" scheme="http://nberserk.github.io/tags/rake/"/>
+    
+      <category term="ruby" scheme="http://nberserk.github.io/tags/ruby/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>fzf ripgrep</title>
+    <link href="http://nberserk.github.io/2019/11/11/fzf-ripgrep/"/>
+    <id>http://nberserk.github.io/2019/11/11/fzf-ripgrep/</id>
+    <published>2019-11-11T15:00:00.000Z</published>
+    <updated>2021-05-30T05:30:39.778Z</updated>
+    
+    <content type="html"><![CDATA[<p>two useful command line tools. highly recommen to use those.</p><h1 id="fzf-fuzzy-finder"><a href="#fzf-fuzzy-finder" class="headerlink" title="fzf - fuzzy finder"></a>fzf - fuzzy finder</h1><p>see this video : <a href="https://www.youtube.com/watch?v=qgG5Jhi_Els" target="_blank" rel="noopener">https://www.youtube.com/watch?v=qgG5Jhi_Els</a></p><p><a href="https://github.com/junegunn/fzf" target="_blank" rel="noopener">https://github.com/junegunn/fzf</a></p><h1 id="ripgrep"><a href="#ripgrep" class="headerlink" title="ripgrep"></a>ripgrep</h1><p>whenever I need to use grep, I have to find the right syntax on the web. It’s because the syntax is not intuitive at all. but after switiching to ripgrep, no more search is required. </p><p><a href="https://github.com/BurntSushi/ripgrep" target="_blank" rel="noopener">https://github.com/BurntSushi/ripgrep</a></p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">rg <span class="string">'fn write\('</span></span><br></pre></td></tr></table></figure>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;two useful command line tools. highly recommen to use those.&lt;/p&gt;
+&lt;h1 id=&quot;fzf-fuzzy-finder&quot;&gt;&lt;a href=&quot;#fzf-fuzzy-finder&quot; class=&quot;headerlink&quot;
+      
+    
+    </summary>
+    
+    
+      <category term="fzf" scheme="http://nberserk.github.io/tags/fzf/"/>
+    
+      <category term="ripgrep" scheme="http://nberserk.github.io/tags/ripgrep/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>tmux</title>
+    <link href="http://nberserk.github.io/2019/08/09/tmux/"/>
+    <id>http://nberserk.github.io/2019/08/09/tmux/</id>
+    <published>2019-08-09T15:00:00.000Z</published>
+    <updated>2021-05-30T05:30:39.778Z</updated>
+    
+    <content type="html"><![CDATA[<p>When you are working with remote compute, usally you use SSH. It is secure and easy. but when you are working with long running task, your ssh session will be disconnected. to prevent this kind of inproductivity, tmux comes in.</p><h2 id="session"><a href="#session" class="headerlink" title="session"></a>session</h2><p>tmux has session. this session will be persistent as long as the remote computer is alive. You can completely restore your context-command histroy, current directory, running progrm.</p><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">tmux new -s default # new session</span><br><span class="line">tmux ls </span><br><span class="line"></span><br><span class="line">tmux attach -t &lt;session&gt;</span><br><span class="line"><span class="meta">tmux&gt;</span><span class="bash"> quit <span class="comment"># terminate session</span></span></span><br><span class="line"><span class="meta">tmux&gt;</span><span class="bash"> tmux detach <span class="comment"># detach current session. session is not terminated</span></span></span><br></pre></td></tr></table></figure><h2 id="window"><a href="#window" class="headerlink" title="window"></a>window</h2><h2 id="pane"><a href="#pane" class="headerlink" title="pane"></a>pane</h2><p>window can be splitted into several panes. tmux can store/restore panes.</p><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">prefix + \" : split active pane horizontally</span><br><span class="line">prefix + arrow key : switch to another pane</span><br><span class="line">prefix + o : move to next pane</span><br></pre></td></tr></table></figure><h2 id="shortcut"><a href="#shortcut" class="headerlink" title="shortcut"></a>shortcut</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">prefix : ctrl + b</span><br><span class="line">prefix + d : detach session</span><br></pre></td></tr></table></figure><h2 id="screen-scroll"><a href="#screen-scroll" class="headerlink" title="screen scroll"></a>screen scroll</h2><p><code>prefix + [</code> will initiate <del>scroll move mode</del>. you can use down/up, /(keyword search), pageup/pagedown to move your scren buffer. by pressing ‘q’ or ‘enter’ you can termiate this mode.</p><h2 id="iTerm2-integration"><a href="#iTerm2-integration" class="headerlink" title="iTerm2 integration"></a>iTerm2 integration</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">tmux -CC            # create new tmux session</span><br><span class="line">tmux -CC attach     # attach to existing session</span><br></pre></td></tr></table></figure>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;When you are working with remote compute, usally you use SSH. It is secure and easy. but when you are working with long running task, you
+      
+    
+    </summary>
+    
+    
+      <category term="tmux" scheme="http://nberserk.github.io/tags/tmux/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>nice metaphor for sw architecture</title>
+    <link href="http://nberserk.github.io/2019/05/06/metaphor-sw-architecture/"/>
+    <id>http://nberserk.github.io/2019/05/06/metaphor-sw-architecture/</id>
+    <published>2019-05-06T15:00:00.000Z</published>
+    <updated>2021-05-30T05:30:39.778Z</updated>
+    
+    <content type="html"><![CDATA[<p>최근에 교육을 받았는데 sw architecture에 관해서 기가 막히는 비유라 생각이 들어서 정리해보려 한다.</p><p>다들 잘 아는 피카소 그림중에 아래와 같은 2개의 그림이 있다. </p><p><img src="/images/eva.jpg" alt="alt text" title="nude It&#39;s eva"><br><img src="/images/mandolin.jpg" alt="alt text" title="womain playing mandarin"></p><p>피카소의 첫번째 그림은 자신의 연인을 여러 각도에서 본 모습을 그림으로 옮겨 놓아서 언뜻 보면 어떤 그림인지 알아보기 힘들게 되어 있다. 반면에 두번째 그림은 비교적 악기를 연주하는 여자를 그린것임을 직관적으로 알 수 있다. </p><p>이렇듯 sw란 것은 작성하는 사람에 따라서 같은 내용도 자유도가 높기 때문에 다양하게 표현될 수 있고 나중에 완성한 것을 다른 사람이 봤을때는 알아보기 어렵다는 것이 꼭 소프트웨어의 속성과 닮아 있다고 비유를 한 것이다. </p><p>SW architect의 역할은 다른 사람이 봤을때도 한사람이 그린것처럼 쉽게 만드는 것이라는 비유도 참 적절한 비유가 아닌가 하는 생각이 든다. </p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;최근에 교육을 받았는데 sw architecture에 관해서 기가 막히는 비유라 생각이 들어서 정리해보려 한다.&lt;/p&gt;
+&lt;p&gt;다들 잘 아는 피카소 그림중에 아래와 같은 2개의 그림이 있다. &lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;/images/eva.j
+      
+    
+    </summary>
+    
+    
+      <category term="general" scheme="http://nberserk.github.io/tags/general/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>implement custom jacoco filter</title>
+    <link href="http://nberserk.github.io/2019/04/24/custom-jacoco-filter/"/>
+    <id>http://nberserk.github.io/2019/04/24/custom-jacoco-filter/</id>
+    <published>2019-04-24T15:00:00.000Z</published>
+    <updated>2021-05-30T05:30:39.778Z</updated>
+    
+    <content type="html"><![CDATA[<p><a href="https://www.eclemma.org/jacoco/" target="_blank" rel="noopener">Jacoco</a> is popular coverage tool for Java worlds. It provides <a href="https://www.eclemma.org/jacoco/trunk/doc/agent.html" target="_blank" rel="noopener">various options</a> to include or exclude specific classes.</p><p>My special requirement is to generate exact coverage report for public functions of non UI classes. Jacoco doesn’t support that functionality. so I want to share my experiences here because I couldn’t find any solution for this.</p><p>The first thing I found was <a href="https://github.com/jacoco/jacoco/wiki/FilteringOptions" target="_blank" rel="noopener">filters</a>. If I can implement my own filter, then that’s all I need. Let’s analyze it more in source code level. After some time, I’ve found <a href="https://github.com/jacoco/jacoco/blob/d3c47652b89267709aae04bec66a68bdf6df9670/org.jacoco.core/src/org/jacoco/core/internal/analysis/filter/Filters.java#L34" target="_blank" rel="noopener">Filter class</a>! It has all required filters for proper coverage reporting.</p><p>Next is implementing my own filter. Let’s reference already existing source code like <a href="https://github.com/jacoco/jacoco/blob/master/org.jacoco.core/src/org/jacoco/core/internal/analysis/filter/AnnotationGeneratedFilter.java" target="_blank" rel="noopener">AnnotationGeneratedFilter.java</a>. Its main functionality is excludding functions annotated by having ‘Generated’ string. </p><p>I <a href="https://github.com/nberserk/jacoco" target="_blank" rel="noopener">forked</a> jacoco project and created <code>_customFilter</code> branch based on <code>0.8.3</code> tag and implemented <a href="https://github.com/nberserk/jacoco/blob/_customFilter/org.jacoco.core/src/org/jacoco/core/internal/analysis/filter/WhiteListFilter.java" target="_blank" rel="noopener">WhiteListFilter</a> and <a href="https://github.com/nberserk/jacoco/blob/_customFilter/org.jacoco.core.test/src/org/jacoco/core/internal/analysis/filter/WhitelistFilterTest.java" target="_blank" rel="noopener">its testcase</a>. </p><p>And I created binary using the following commands. jar files are located in <code>jacoco/target/</code> folder.</p><blockquote><p>mvn clean package -DskipTests=True</p></blockquote><p>last thing you have to do is let gradle use those built jar files. copy those jar files to <code>&lt;root&gt;/lib</code> directory. and change your build.gradle file like the followings.</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">dependencies &#123;</span><br><span class="line">    // override jacoco jars</span><br><span class="line">    jacocoAgent files(&quot;$rootProject.projectDir/lib/org.jacoco.agent-0.8.3.201904130250.jar&quot;)</span><br><span class="line">    jacocoAnt files(&quot;$rootProject.projectDir/lib/org.jacoco.ant-0.8.3.201904130250.jar&quot;,</span><br><span class="line">            &quot;$rootProject.projectDir/lib/org.jacoco.core-0.8.3.201904130250.jar&quot;,</span><br><span class="line">            &quot;$rootProject.projectDir/lib/org.jacoco.report-0.8.3.201904130250.jar&quot;,</span><br><span class="line">            &quot;$rootProject.projectDir/lib/asm-7.0.jar&quot;,</span><br><span class="line">            &quot;$rootProject.projectDir/lib/asm-tree-7.0.jar&quot;,</span><br><span class="line">            &quot;$rootProject.projectDir/lib/asm-commons-7.0.jar&quot;</span><br><span class="line">            )</span><br><span class="line">    </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><p>then last thing you have to is annotate your target class using <code>@TestRequired</code> class.</p><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@TestRequired</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyClass</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">doSomething</span><span class="params">(String str)</span> </span>&#123;</span><br><span class="line">        <span class="comment">// this function will be included in coverage report.</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="title">doSomethingElse</span><span class="params">(String str)</span> </span>&#123;</span><br><span class="line">        <span class="comment">// this function will NOT be included in coverage report.</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;&lt;a href=&quot;https://www.eclemma.org/jacoco/&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;Jacoco&lt;/a&gt; is popular coverage tool for Java worlds. It provides
+      
+    
+    </summary>
+    
+    
+      <category term="jacoco" scheme="http://nberserk.github.io/tags/jacoco/"/>
+    
+      <category term="coverage" scheme="http://nberserk.github.io/tags/coverage/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Strong views, weakly Held</title>
+    <link href="http://nberserk.github.io/2019/02/08/strongview-weaklyHeld/"/>
+    <id>http://nberserk.github.io/2019/02/08/strongview-weaklyHeld/</id>
+    <published>2019-02-08T15:00:00.000Z</published>
+    <updated>2021-05-30T05:30:39.777Z</updated>
+    
+    <content type="html"><![CDATA[<p>회사를 다니다 보면 자기 주장이 강한 사람, 커뮤니케이션이 어려운 사람들을 만나는데 이런 사람과는 협업하는 것이 고역이다. 헌데 어느날 블로그에서 <a href="https://medium.com/@kpak/%ED%9B%8C%EB%A5%AD%ED%95%9C-%ED%8C%80%EC%9B%90%EC%9D%98-%EC%A1%B0%EA%B1%B4-strong-views-weakly-held-17880611d962" target="_blank" rel="noopener">이런 글</a>을 봤는데 이런것을 가르키는 단어가 있는것이 아닌가. 너무 좋은 표현이라 생각해서 정리해 본다. </p><h1 id="strong-views-weakly-held"><a href="#strong-views-weakly-held" class="headerlink" title="strong views, weakly held"></a>strong views, weakly held</h1><ul><li>언제든 나의 주장보다 나은 이유가 있는 주장이 있다면 그것을 채택하는 것.</li><li>A, B 선택지가 있을때 내가 A를 선택했다면, A여야 하는 이유에 대해 리서치를 하지말고 B여야 하는 이유에 대해서 리서치를 해보고 판단을 내리면 더 나은 결정을 내릴 확률이 높다는 것.<br>기존은 A/B 선택지가 있을때 자기의견이 맞는 이유만 찾기 때문에 기존의 틀?에 갖혀서 잘못된 결정을 내리기 쉽기 때문이다.</li></ul>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;회사를 다니다 보면 자기 주장이 강한 사람, 커뮤니케이션이 어려운 사람들을 만나는데 이런 사람과는 협업하는 것이 고역이다. 헌데 어느날 블로그에서 &lt;a href=&quot;https://medium.com/@kpak/%ED%9B%8C%EB%A5%AD%ED
+      
+    
+    </summary>
+    
+    
+      <category term="mgmt" scheme="http://nberserk.github.io/tags/mgmt/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>graph db</title>
+    <link href="http://nberserk.github.io/2019/01/28/graphdb/"/>
+    <id>http://nberserk.github.io/2019/01/28/graphdb/</id>
+    <published>2019-01-28T15:00:00.000Z</published>
+    <updated>2021-05-30T05:30:39.777Z</updated>
+    
+    <content type="html"><![CDATA[<p>graph db에 대해서 한번 정리. AWS에서는 <a href="https://aws.amazon.com/neptune/" target="_blank" rel="noopener">Neptune</a>이 있고, 오픈 소스로는 <a href="https://neo4j.com/" target="_blank" rel="noopener">Neo4j</a></p><h1 id="why-graph-db"><a href="#why-graph-db" class="headerlink" title="why graph db ?"></a>why graph db ?</h1><p>RDBMS 에서 relationship은 JOIN으로 표현되는데, 이런 relationship이 생길때 마다 JOIN이 반복되는데, 이게 어느 정도 이상의 복잡한 relation을 쿼리 해야 한다면 그만큼의 JOIN을 많이 해야 하고 테이블도 많아져야 한다. 이런 RDBMS의 pain point를 해결한것이 graph DB이다. graph에서 relation은 하나의 링크에 지나지 않으므로 같은 쿼리를 RDB와 graph로 비교해보면 그래프의 우위가 확실히 있다.</p><p>~~social network을 생각해보자. 사람과의 follower 관계를 쿼리 해야 하는데, darren의 follower중에 rachel의 follwer중 중복되는 사람을 찾는 다고 생각해보자. 그러면 RDBMS의 경우는 쿼리가 이렇게 될 것 같다. ~~</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select * from follower D JOIN follower R WHERE D.user=&apos;darren&apos; and R</span><br></pre></td></tr></table></figure><h1 id="reference"><a href="#reference" class="headerlink" title="reference"></a>reference</h1><ul><li><a href="https://neo4j.com/developer/graph-db-vs-rdbms/" target="_blank" rel="noopener">graph db vs rdbms</a></li></ul>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;graph db에 대해서 한번 정리. AWS에서는 &lt;a href=&quot;https://aws.amazon.com/neptune/&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;Neptune&lt;/a&gt;이 있고, 오픈 소스로는 &lt;a href=&quot;ht
+      
+    
+    </summary>
+    
+    
+      <category term="graph" scheme="http://nberserk.github.io/tags/graph/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>how to debug EMR spark job</title>
+    <link href="http://nberserk.github.io/2019/01/09/debug-spark/"/>
+    <id>http://nberserk.github.io/2019/01/09/debug-spark/</id>
+    <published>2019-01-09T15:00:00.000Z</published>
+    <updated>2021-05-30T05:30:39.777Z</updated>
+    
+    <content type="html"><![CDATA[<p>aws EMR에서 띄운 spark를 디버깅 하는 팁..</p><ol><li><a href="/2019/01/07/enable-debuggin-emr">일단 debuggin option을 켜고</a>, emr을 론치할때 LogUri로 s3 path를 지<br>정함</li><li>그러면 <bucket>/logs/&lt;cluster_id&gt;/containers/application_<timestamp><em><seq>/container</seq></em><timestamp>_xx_xx_<seq> 이런 형식으로 로그가 저장된다. 여기서 application_<seq>는 1씩 증가되면서 붙으니 자신이 돌린 잡의 seq를 확인하여 container의 첫번지 seq log를 보면 executor log가 보인다. 이것으로 모든 로그를 볼 수 있음</seq></seq></timestamp></timestamp></bucket></li></ol>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;aws EMR에서 띄운 spark를 디버깅 하는 팁..&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;a href=&quot;/2019/01/07/enable-debuggin-emr&quot;&gt;일단 debuggin option을 켜고&lt;/a&gt;, emr을 론치할때 LogUri로 s3 pa
+      
+    
+    </summary>
+    
+    
+      <category term="spark" scheme="http://nberserk.github.io/tags/spark/"/>
+    
+      <category term="emr" scheme="http://nberserk.github.io/tags/emr/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>enable debugging option on aws EMR</title>
+    <link href="http://nberserk.github.io/2019/01/06/enable-debugging-emr/"/>
+    <id>http://nberserk.github.io/2019/01/06/enable-debugging-emr/</id>
+    <published>2019-01-06T15:00:00.000Z</published>
+    <updated>2021-05-30T05:30:39.777Z</updated>
+    
+    <content type="html"><![CDATA[<p>aws web에는 EMR을 띄울때 enable debugging하는 옵션이 있는데 boto3<br>에서는 <a href="https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/emr.html#client" target="_blank" rel="noopener">해당 옵션이 없어서</a> 찾아보니 아래처럼 custom step 으로 해줘야 한다고..</p><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line">client = boto3.client(<span class="string">'emr'</span>, region_name=<span class="string">'us-west-2'</span>, verify=<span class="keyword">False</span>)</span><br><span class="line"></span><br><span class="line">response = client.run_job_flow(</span><br><span class="line">    Name=<span class="string">"launch test cluster"</span>,</span><br><span class="line">    LogUri=S3_LOG_URI,</span><br><span class="line">    ReleaseLabel=<span class="string">'emr-5.19.0'</span>,</span><br><span class="line">    Instances=&#123;</span><br><span class="line">        <span class="string">'MasterInstanceType'</span>: <span class="string">'m4.xlarge'</span>,</span><br><span class="line">        <span class="string">'SlaveInstanceType'</span>: <span class="string">'r3.xlarge'</span>,</span><br><span class="line">        <span class="string">'InstanceCount'</span>: <span class="number">3</span>,</span><br><span class="line">        <span class="string">'KeepJobFlowAliveWhenNoSteps'</span>: <span class="keyword">True</span>,</span><br><span class="line">        <span class="string">'TerminationProtected'</span>: <span class="keyword">False</span>,</span><br><span class="line">        <span class="string">'Ec2SubnetId'</span>: EC2_SUBNET,</span><br><span class="line">        <span class="string">'Ec2KeyName'</span>: EC2_KEY,</span><br><span class="line">    &#125;,</span><br><span class="line">    VisibleToAllUsers=<span class="keyword">True</span>,</span><br><span class="line">    JobFlowRole=<span class="string">'EMR_EC2_DefaultRole'</span>,</span><br><span class="line">    ServiceRole=<span class="string">'EMR_DefaultRole'</span>,</span><br><span class="line">    Applications=[</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="string">'Name'</span>: <span class="string">'Spark'</span></span><br><span class="line">        &#125;,</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="string">'Name'</span>: <span class="string">'Zeppelin'</span></span><br><span class="line">        &#125;</span><br><span class="line">    ],</span><br><span class="line">    Steps=[</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="string">'Name'</span>: <span class="string">'Setup Debugging'</span>,</span><br><span class="line">            <span class="string">'ActionOnFailure'</span>: <span class="string">'TERMINATE_CLUSTER'</span>,</span><br><span class="line">            <span class="string">'HadoopJarStep'</span>: &#123;</span><br><span class="line">                <span class="string">'Jar'</span>: <span class="string">'s3://us-west-2.elasticmapreduce/libs/script-runner/script-runner.jar'</span>,</span><br><span class="line">                <span class="string">'Args'</span>: [<span class="string">'s3://us-west-2.elasticmapreduce/libs/state-pusher/0.1/fetch'</span>]</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    ]</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">cluster_id = response[<span class="string">"JobFlowId"</span>]</span><br><span class="line"></span><br><span class="line">print(<span class="string">'launching...'</span>)</span><br><span class="line"></span><br><span class="line">waiter = client.get_waiter(<span class="string">'cluster_running'</span>)</span><br><span class="line">waiter.wait(ClusterId=cluster_id)</span><br><span class="line"></span><br><span class="line">print(<span class="string">'launch cluster id: &#123;0&#125;'</span>.format(cluster_id))</span><br></pre></td></tr></table></figure>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;aws web에는 EMR을 띄울때 enable debugging하는 옵션이 있는데 boto3&lt;br&gt;에서는 &lt;a href=&quot;https://boto3.amazonaws.com/v1/documentation/api/latest/reference/ser
+      
+    
+    </summary>
+    
+    
+      <category term="aws" scheme="http://nberserk.github.io/tags/aws/"/>
+    
+      <category term="emr" scheme="http://nberserk.github.io/tags/emr/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Software engineering in Google</title>
+    <link href="http://nberserk.github.io/2019/01/05/swengineering-google/"/>
+    <id>http://nberserk.github.io/2019/01/05/swengineering-google/</id>
+    <published>2019-01-05T15:00:00.000Z</published>
+    <updated>2021-05-30T05:30:39.777Z</updated>
+    
+    <content type="html"><![CDATA[<p><a href="https://arxiv.org/ftp/arxiv/papers/1702/1702.01715.pdf" target="_blank" rel="noopener">software engineering in google</a>논문을 보고 몇가지 인상적인 부분을 요약해 봤다. </p><h1 id="sw-development"><a href="#sw-development" class="headerlink" title="sw development"></a>sw development</h1><ul><li>하나의 소스 코드 repo. <ul><li>하나의 거대한 repo에 모든 프로젝트를 관리하고 있고, 누구나 read 권한을 가지고 있다. </li><li>Chrome이나 안드로이드는 오픈 소스이므로 별도의 repo에 있다. </li><li>subtree는 owner만 write권한을 가지고 있고 이들의 리뷰 및 승인을 받아야 반영된다.</li><li>subtree는 최소한 두명이상의 오너가 등록이 필요하고, 하위폴더는 상위폴더의 오너를 상속.</li><li>리뷰를 받아야지만 변경이 메인라인에 반영됨</li></ul></li><li>빌드 시스템<ul><li>Blaze라고 하는 분산 빌드환경을 제공</li><li>Blaze BUILD 파일을 작성하는데, 이름, 소스 파일들, 필요로 하는 라이브러리들(dependency) 이를 build rules이라 함.</li><li>빌드는 몇가지 step으로 이루어짐. 예로 빌드 스텝과 링킹 스텝</li><li>빌드는 구글 cloud 인프라위에서 돌기 때문에 매우 빨리 결과가 나옴</li><li>빌드 결과는 클라우드에 cache됨.</li><li>presumit checks. 반영되기 전에 테스트를 돌린다거나 static analysis를 돌리는 등의 결과를 피드백 받음.</li></ul></li><li>코드 리뷰<ul><li>웹 기반의 코드리뷰 시스템이 있고, 이메일과 연동되어 이메일로도 모든 리뷰 상황이 피드백 된다. </li><li>리뷰어를 자동으로 추천해주는 시스템도 있음.</li><li>리뷰어가 리뷰는 늦게 하거나 승인을 꺼리는 경우 문제가 개발 속도가 저하되는 문제가 있는데, 리뷰어가 여러명이기 때문에 더 나이스한 사람에게 리뷰를<br>요청하는 것으로 이문제를 회피할 수 있음.</li><li>코드 리뷰 과정은 메일링 리스트에 자동으로 기록으로 남음.</li><li>experimental repo는 코드 리뷰없이 반영할 수도 있음. 하지만 이를 권장하지는 않음.</li><li>변경의 크기를 300라인이하로 작게 만들것을 권장함.</li></ul></li><li>테스팅<ul><li>unit testing은 기본. </li><li>code coverage를 소스 코드 탐색기에 보여주기도 함. </li><li>프로덕션 환경에 디플로이 하기전에는 로드 테스팅을 기본으로 함.</li></ul></li><li>버그 트래킹<ul><li>Buganizer라고 하는 이슈 트래킹 시스템을 사용.</li><li>코드 반영을 할때 관련된 이슈를 레퍼런스하게 되어 있음</li></ul></li><li>프로그래밍 언어<ul><li>5가지 공인 언어(C++,java, python, go, javascript)를 사용할 것을 독려</li><li>각 언어에 대한 style guide가 있음.</li><li>다른 언어에 대한 연결은 protocol buffer로 함. 이는 Google RPC 라이브러리와 통함되어 있음</li></ul></li><li>디버깅 &amp; 프로파일링<ul><li>서버들은 디버깅 라이브러리들을 링킹하고 있는데, 크래쉬 상황이나 OOM 상황에서 signal handler가 스택 덤프를 로그 파일에 적게 되어 있고, core file도 남기게 되어 있음</li><li>incoming/outgoing RPC packet들에 대한 로그나 타이밍등도 남기게 되어 있음</li></ul></li><li>Release engineering<ul><li>대부분의 프로세스가 자동화 되어 있기에 자주 릴리즈 된다. 주별로, 일별로 진행된다. </li><li>green 빌드로 확인된 변경을 싱크해서 릴리즈 브랜치로 보내고, 이번 릴리즈에 필요한 특정 변경사항들을 cherry-pick한다. 테스트가 실패하거나 하면 다시 cherry-pick한다. 모든 테스트가 성공하면 바이너리와 데이터들을 같이 패키지 한다.</li><li>이렇게 릴리즈 후보가 만들어지면, staging 서버로 보내고 integration test를 한다. </li><li>이때 production의 트래픽을 staging서버로 보내서 테스트하는 테크닉을 쓴다. 물론 실제 production으로 보내고 카피하여 스테이징으로 보내는것. 이렇게 하면 미리 production환경을 테스트 해볼수 있어 유용하다.</li><li>다음은 canary deploy인데, 트래픽을 몇%만 새 서버로 주고, 나머지는 기존 서버로 보내어 새 서버에 큰 문제가 없는지 본후, 서서히 새 서버로의 트래픽을 늘려주고 100%까지 채운후 기존 서버군을 셧다운 한다.</li></ul></li><li>launch approval<ul><li>사용자가 보게되는 서비스는 launch approval을 받아야 한다. 이는 reliability, legal, privacy, security등의 모든 것이 충족되어야 허가가 난다.</li></ul></li><li>회고(post-mortems)<ul><li>큰 장애가 나거나 사소한 에러가 나도 관련된 사람은 회고 문서를 작성하게 된다. 문제에 포커스가 있고, 재발방지를 위해 어떻게 해야 하는지에 집중한다. 누구를 비난하기 위한 것이 아니다. 문제는 수치로 디테일하게 작성된다.</li></ul></li><li>잦은 재개발(frequent rewrite)<ul><li>refactoring은 비용이 높다. 하지만 구글의 민첩성과 미래에 도움이 된다. </li><li>리팩토링은 불필요한 복잡함을 없애고, 더이상 필요하지 않은 기능들을 없앨 수 있다. 또한 새 개발자들에게 ownership을 전파하는 효과도 있다. 그들의 것이라고 느끼면 사람들의 생산성은 높아진다. </li></ul></li></ul><h1 id="project-management"><a href="#project-management" class="headerlink" title="project management"></a>project management</h1><ul><li>OKR(Objectives and Key Results)<ul><li>OKR 년단위 또는 분기 단위로 모든 임직원은 OKR을 작성해야 한다. OKR은 측정 가능한 목표다.</li><li>좋은 성적을 낸 팀은 다음에 더 높은 OKR 목표를 입력하게 되고, 못한 팀은 더 적은 목표를 입력하게 된다.</li></ul></li><li>프로젝트 승인<ul><li>정형화된 프로세스는 없다. 대부분은 bottom-up 방식으로 진행된다.</li></ul></li></ul><h1 id="people-management"><a href="#people-management" class="headerlink" title="people management"></a>people management</h1><ul><li>engineering manager<ul><li>사람을 매니지만 하는 역할이다. 엔지니어도 매니징을 할 수 있지만, 엔지니어링 매니저는 사람 관리만! 한다.</li><li>tech lead는 중요한 테크니컬 결정을 하고, 매니저는 tech lead를 선택하고, 그들의 팀과 성과를 매니지 한다.</li><li>코칭을 하고, 팀원의 커리어 발전을 도와주고, 평가를 하고, 보상을 한다.</li><li>채용도 관장한다. </li><li>보통은 8-12명까지는 관리하고, 3-30명까지 관리할 수도 있다.</li></ul></li><li>Software engineer(SWE)<ul><li>엔지니어와 매니저는 다른 트랙을 가지고 있다</li><li>사람을 매니징하는 것은 승진과 별 상관이 없다. </li><li>리더십을 보여주는게 중요한데, 리더쉽은 많은 개발자가 사용하는 임팩트 있는 SW를 개발하는 것이다.</li><li>이렇게 함으로서, 테크니컬 스킬은 좋으나 매니징에 서툰 사람에게 좋은 커리어 패스를 제공한다.</li></ul></li><li>research scientist<ul><li>예외적은 리서치를 할 수 잇는 사람을 뽑는다</li><li>대개 논문등으로 성과를 측정하지만 하는 일은 SWE와 크게 차이가 나지는 않는다.</li><li>대개는 SWE와 같은 팀에서 같이 프로젝트를 하게 된다. </li></ul></li><li>Site Reliability Engineer (SRE)<ul><li>운영에 관련된 엔지니어이다.</li></ul></li><li>product manager<ul><li>product을 매니징하는 역할. </li><li>엔지니어와 조율하면서, 필요한 피처들을 구체화하고 우선순위를 매겨서 전달하는 역할을 한다. </li><li>코드를 쓰지는 않지만, 필요한 코드가 쓰여지게 조율하는 역할이다.</li></ul></li><li>program manager/technical program manager<ul><li>product manager와 비슷하지만 product을 관리하지 않고 프로젝트와 운영등을 관리한다.</li><li>TPM은 비슷하지만 특정 기술이 더 필요한 분야에 필요한 사람이다. </li></ul></li></ul>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;&lt;a href=&quot;https://arxiv.org/ftp/arxiv/papers/1702/1702.01715.pdf&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;software engineering in google&lt;/a&gt;논문을 보고 
+      
+    
+    </summary>
+    
+    
+      <category term="google" scheme="http://nberserk.github.io/tags/google/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>spark application template</title>
+    <link href="http://nberserk.github.io/2018/12/23/spark-template/"/>
+    <id>http://nberserk.github.io/2018/12/23/spark-template/</id>
+    <published>2018-12-23T15:00:00.000Z</published>
+    <updated>2021-05-30T05:30:39.777Z</updated>
+    
+    <content type="html"><![CDATA[<p>spark application template을 만들어 보았다.<br>의외로 설정해줄것이 좀 있기 때문.<br>프로젝트는 <a href="https://github.com/nberserk/sandbox/tree/master/spark" target="_blank" rel="noopener"> spark template github project</a> 에서 볼 수 있다.</p><ol><li><a href="https://docs.scala-lang.org/tutorials/scala-with-maven.html" target="_blank" rel="noopener">maven scala project</a> 임. official spark도 maven으로 되어 있기도 하고, 원래 스칼라는 sbt라는 빌드 툴을 쓰는데 아마도 속도에서 뭔가 문제가 있는 모양.</li><li>scala version은 2.11.12을 사용했고, spark는 <a href="http://spark.apache.org/downloads.html" target="_blank" rel="noopener">spark v2.3.2 Apache Haddop 2.7 and later</a> 버전을 사용함. scala version이 다르면 바이너리도 다르니 신경 써줘야 함.</li><li>문서는 <a href="http://spark.apache.org/docs/2.3.2/" target="_blank" rel="noopener">http://spark.apache.org/docs/2.3.2/</a> 이것을 보면 됨.</li><li>설정을 파일로 빼기위해 <a href="https://github.com/lightbend/config" target="_blank" rel="noopener">typesafe</a> 를 사용함.</li><li>DataFrame, DataSet등을 비교하기 위해서 <a href="https://github.com/MrPowers/spark-fast-tests" target="_blank" rel="noopener">spark-fast-tests</a> 를 사용함.</li></ol>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;spark application template을 만들어 보았다.&lt;br&gt;의외로 설정해줄것이 좀 있기 때문.&lt;br&gt;프로젝트는 &lt;a href=&quot;https://github.com/nberserk/sandbox/tree/master/spark&quot; targ
+      
+    
+    </summary>
+    
+    
+      <category term="spark" scheme="http://nberserk.github.io/tags/spark/"/>
+    
+      <category term="template" scheme="http://nberserk.github.io/tags/template/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>invoke</title>
+    <link href="http://nberserk.github.io/2018/12/09/invoke/"/>
+    <id>http://nberserk.github.io/2018/12/09/invoke/</id>
+    <published>2018-12-09T15:00:00.000Z</published>
+    <updated>2021-05-30T05:30:39.776Z</updated>
+    
+    <content type="html"><![CDATA[<p>rake 같은 것을 python세계에서 fabric을 사용하고 있었는데, fabric이 invoke로 이름이 바뀌었다. 앞으로 이것으로 사용해 봐야겠다.</p><p>설치는 아래처럼 하면 되고</p><blockquote><p>pip install invoke</p></blockquote><p>디렉토리에 tasks.py에 아래와 같은 태스크를 정의하면 </p><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> invoke <span class="keyword">import</span> task</span><br><span class="line"></span><br><span class="line"><span class="meta">@task</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">co</span><span class="params">(c, branch)</span>:</span></span><br><span class="line">    c.run(<span class="string">"git checkout -b &#123;&#125;"</span>.format(branch))</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">db</span><span class="params">(c)</span>:</span></span><br><span class="line">    c.sudo(<span class="string">'ssh -L 33:&lt;remote_db_url&gt;:3306 dev'</span>,password=<span class="string">'&lt;sudo_password&gt;'</span>)</span><br></pre></td></tr></table></figure><blockquote><p>inv db</p></blockquote><p>을 바로 부를 수 있다. 좋은 것은 상위 디렉토리에 있는 tasks.py를 recursive하게 보기 때문에 위 폴더에 상위 폴더의 task가 inherit된다.</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;rake 같은 것을 python세계에서 fabric을 사용하고 있었는데, fabric이 invoke로 이름이 바뀌었다. 앞으로 이것으로 사용해 봐야겠다.&lt;/p&gt;
+&lt;p&gt;설치는 아래처럼 하면 되고&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;pip insta
+      
+    
+    </summary>
+    
+    
+      <category term="invoke" scheme="http://nberserk.github.io/tags/invoke/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>optimistic locking</title>
+    <link href="http://nberserk.github.io/2018/11/20/optimistic-locking/"/>
+    <id>http://nberserk.github.io/2018/11/20/optimistic-locking/</id>
+    <published>2018-11-21T00:53:41.000Z</published>
+    <updated>2021-05-30T05:30:39.776Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="optimistic-locking"><a href="#optimistic-locking" class="headerlink" title="optimistic locking"></a>optimistic locking</h1><p><a href="https://docs.aws.amazon.com/ko_kr/amazondynamodb/latest/developerguide/DynamoDBMapper.OptimisticLocking.html" target="_blank" rel="noopener">https://docs.aws.amazon.com/ko_kr/amazondynamodb/latest/developerguide/DynamoDBMapper.OptimisticLocking.html</a></p><p>dynamo db가 사용하는 optimistic locking<br>use case가 그럴듯 하여 정리.</p><p>dynamo db는 RDB가 아니니 당연 트랜잭션을 사용할수 없음. 그래서 아쉬운 경우가 많음. 이때 optimistic locking을 사용하여 간단히 트랜잭션 처리를 할 수 있어 유용함.<br>컬럼에 version field를 추가하고 user id(partition key)/version(sort key)로 설정하여 중복된 version이 생성될 수 없게 constraint를 걸어줌. </p><p>플로우는 이러함.</p><ol><li>row get</li><li>값 변경하고, version +1 증가</li><li>저장. 이때 integrity exception이 발생하면 1부터 다시 시작함.</li></ol>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;h1 id=&quot;optimistic-locking&quot;&gt;&lt;a href=&quot;#optimistic-locking&quot; class=&quot;headerlink&quot; title=&quot;optimistic locking&quot;&gt;&lt;/a&gt;optimistic locking&lt;/h1&gt;&lt;p&gt;&lt;a hre
+      
+    
+    </summary>
+    
+    
+      <category term="dynamo" scheme="http://nberserk.github.io/tags/dynamo/"/>
+    
+  </entry>
+  
+</feed>
