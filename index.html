@@ -30,6 +30,19 @@
 <link rel="stylesheet" href="/css/styles.css">
 
   
+<!-- Google Analytics -->
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-63706532-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+<!-- End Google Analytics -->
+
 
 <meta name="generator" content="Hexo 5.4.0"></head>
 
@@ -192,7 +205,32 @@
 <li>scalable</li>
 <li><del>highly available</del> since we can assume that default is allow the request if the throttling service is not available.</li>
 </ul>
-<h2 id="request-processing"><a href="#request-processing" class="headerlink" title="request processing"></a>request processing</h2><h2 id="token-bucket-algorithm"><a href="#token-bucket-algorithm" class="headerlink" title="token bucket algorithm"></a>token bucket algorithm</h2><h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2>
+<h2 id="request-processing"><a href="#request-processing" class="headerlink" title="request processing"></a>request processing</h2><p><img src="https://user-images.githubusercontent.com/900639/124370124-a29e0680-dc28-11eb-9ca0-039aa7db62bd.png" alt="image"></p>
+<h2 id="token-bucket-algorithm"><a href="#token-bucket-algorithm" class="headerlink" title="token bucket algorithm"></a>token bucket algorithm</h2><p>one of the popular algorithm for rate-limiting algorithm.</p>
+<p><img src="https://user-images.githubusercontent.com/900639/124370140-c8c3a680-dc28-11eb-914e-8541dcf0f632.png" alt="image"></p>
+<h2 id="interfaces-and-classes"><a href="#interfaces-and-classes" class="headerlink" title="interfaces and classes"></a>interfaces and classes</h2><ul>
+<li>JobSceduler: fetch rules from RuleService periodically</li>
+<li>RulesCache: store token bucket objects</li>
+<li>ClientIdentifier: identify client form the request </li>
+<li>RateLimiter: provide <code>allowRequest()</code> api</li>
+</ul>
+<h2 id="Distributed-world"><a href="#Distributed-world" class="headerlink" title="Distributed world"></a>Distributed world</h2><p>as we move to distributed world, we need to share local remaining tokens to other hosts. </p>
+<h3 id="message-boarcasting"><a href="#message-boarcasting" class="headerlink" title="message boarcasting"></a>message boarcasting</h3><p>possible approaches:</p>
+<ul>
+<li>Tell everyone everything: not scalable, message grows quadratically</li>
+<li>gossip communication</li>
+<li>distributed cache cluster</li>
+<li>coordination service: one host takes coordination leader role. Paxos, Raft</li>
+<li>random leader selection</li>
+</ul>
+<p><img src="https://user-images.githubusercontent.com/900639/124373547-eeac7380-dc47-11eb-8fb3-1b6be446ed7f.png" alt="image"></p>
+<h3 id="TCP-VS-UDP"><a href="#TCP-VS-UDP" class="headerlink" title="TCP VS UDP"></a>TCP VS UDP</h3><p>TCP: slow, accuracy, order guaranteed<br>UDP: fast, not reliable, order not guaranteed</p>
+<h3 id="How-to-integrate-all-this-with-the-service"><a href="#How-to-integrate-all-this-with-the-service" class="headerlink" title="How to integrate all this with the service?"></a>How to integrate all this with the service?</h3><p><img src="https://user-images.githubusercontent.com/900639/124373585-46e37580-dc48-11eb-9efe-b70fef4cb38c.png" alt="image"></p>
+<h2 id="final-look"><a href="#final-look" class="headerlink" title="final look"></a>final look</h2><p><img src="https://user-images.githubusercontent.com/900639/124373721-adb55e80-dc49-11eb-8643-d77ec2b938c3.png" alt="image"></p>
+<h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://www.youtube.com/watch?v=FU4WlwfS3G0&amp;t=815s">https://www.youtube.com/watch?v=FU4WlwfS3G0&amp;t=815s</a></li>
+</ul>
+
       
     </div>
 
@@ -1106,7 +1144,7 @@
   <footer class="blog-footer">
   <div class="container">
     <div id="footer-info" class="inner">
-      &copy; 2021 @nberserk<br>
+      &copy; 2022 @nberserk<br>
       Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
     </div>
   </div>
